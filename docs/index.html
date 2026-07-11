@@ -69,13 +69,95 @@
   </section>
 
   <!-- Task 4 -->
-  <section class="section" id="abstract"></section>
+  <section class="section" id="abstract">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 section-heading has-text-centered">Abstract</h2>
+      <div class="content is-medium">
+        <p>
+          Proactive robot assistance requires acting on user needs before explicit requests, but
+          zero-shot vision-language models struggle in this setting: lacking knowledge of the user's
+          personal routine, they treat every situation as general and uncertain, defaulting to
+          inaction rather than risking an incorrect intervention. We observe that everyday routines
+          are highly repetitive, so even a few interactions reveal stable user-specific patterns that
+          can ground proactive decisions. Based on this, we propose a System 1&ndash;2 framework in
+          which a VLM task predictor reads a Procedural Assistance Memory (PAM) alongside the current
+          observation to decide when and how to assist, and a VLA executor realizes the predicted
+          task as low-level robot action. PAM is structured as a finite-state machine over activity
+          phases, per-state assistance rules, and event-driven transitions; a reflection VLM revises
+          PAM from each day's interaction trace without weight updates or retraining. We evaluate on
+          a multi-day desk-assistance scenario with six pick-and-place tasks. Memory-free baselines
+          remain conservative across all five evaluation days, yielding near-zero recall on proactive
+          tasks. Our system improves consistently with accumulated experience, achieving the highest
+          precision, recall, and F1 and reducing first-fire delay from approximately 5 seconds on
+          Day 1 to 1 second by Day 5. Ablations further show that the FSM structure, rather than
+          memory alone, is the primary driver of these gains.
+        </p>
+      </div>
+    </div>
+  </section>
 
   <!-- Task 4 -->
-  <section class="section" id="motivation"></section>
+  <section class="section" id="motivation">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 section-heading has-text-centered">The same scene, a different right answer</h2>
+      <div class="figure">
+        <img src="static/images/fig1_motivation.png"
+             alt="Three ways to respond to a person arriving at a desk with a bowl: explicit command, intention prediction, and memory-based prediction.">
+      </div>
+      <div class="content is-medium" style="margin-top: 1.5rem;">
+        <p>
+          A person sits down with an empty bowl. Oatmeal? Cereal? Yogurt? Nothing in the scene
+          settles it &mdash; the answer lives in the user's habits, not in the pixels. A zero-shot
+          VLM, unable to tell which of several plausible interventions is the right one, does the
+          safe thing and does nothing. That conservatism is why memory-free baselines score
+          near-zero recall on every proactive task, on every one of the five evaluation days.
+        </p>
+        <p>
+          The missing information is learnable, and cheaply. Everyday routines repeat, so a handful
+          of days of watching one person is enough to fix what "a bowl on the desk" means for
+          <em>this</em> person. PAM accumulates exactly that, at deployment time, with no weight
+          updates.
+        </p>
+      </div>
+    </div>
+  </section>
 
   <!-- Task 4 -->
-  <section class="section" id="architecture"></section>
+  <section class="section" id="architecture">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 section-heading has-text-centered">Architecture</h2>
+      <div class="figure">
+        <img src="static/images/fig2_overview.png"
+             alt="Overview: a VLM task predictor reads PAM and recent frames to set a task for the VLA executor; a reflector updates PAM at the end of each day.">
+      </div>
+      <div class="content is-medium" style="margin-top: 1.5rem;">
+        <p>
+          <strong>System 1&ndash;2, split.</strong> Once per second, a Qwen3.5-27B task predictor
+          (thinking off) reads the PAM memory together with the last <em>W</em> = 5 frames and emits
+          either a language subtask &mdash; <em>"bring milk"</em> &mdash; or <code>NO_ACT</code>.
+          Anything that is not <code>NO_ACT</code> goes to a &pi;<sub>0.5</sub> executor fine-tuned
+          on the six atomic skills, which turns it into robot action. Neither model has to do the
+          other's job, which is exactly the failure mode of a monolithic VLA under limited robot
+          data.
+        </p>
+        <p>
+          <strong>The memory writes itself.</strong> At the end of each day, a reflector &mdash; the
+          same backbone, thinking on &mdash; watches the day's recording and rewrites PAM: adding
+          the assistive opportunities the robot missed, broadening triggers that fired too late,
+          introducing new states, and revising rules that no longer match what the user does. No
+          gradients, no retraining, no human writing rules.
+        </p>
+      </div>
+      <div class="figure" style="margin-top: 2.5rem; max-width: 800px;">
+        <img src="static/images/fig9_cameras.png"
+             alt="Camera setup: two back-facing cameras observe the user and the desk; a wrist camera provides close-up grasp context.">
+        <p class="figure-caption">
+          A Franka Research 3 arm and three RealSense cameras. The VLM stack sees only the two
+          back-facing views; the VLA additionally sees the wrist camera.
+        </p>
+      </div>
+    </div>
+  </section>
 
   <!-- Task 5 -->
   <section class="section" id="tasks"></section>

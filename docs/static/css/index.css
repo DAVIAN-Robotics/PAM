@@ -98,3 +98,10 @@ body {
 .video-slot.is-missing .video-slot__fallback {
   display: flex;
 }
+
+#abstract,
+#tasks,
+#results,
+#generalization {
+  background: var(--pam-bg-alt);
+}
