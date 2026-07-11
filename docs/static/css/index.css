@@ -1,0 +1,37 @@
+:root {
+  --pam-orange: #e8710a;
+  --pam-orange-soft: #fff1e2;
+  --pam-gray: #5f6368;
+  --pam-border: #dadce0;
+  --pam-bg-alt: #f8f9fa;
+}
+
+body {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.publication-title {
+  font-family: 'Google Sans', sans-serif;
+}
+
+.section-heading {
+  font-family: 'Google Sans', sans-serif;
+  margin-bottom: 1.5rem;
+}
+
+.figure {
+  margin: 0 auto;
+  max-width: 1000px;
+}
+
+.figure img {
+  width: 100%;
+  height: auto;
+}
+
+.figure-caption {
+  color: var(--pam-gray);
+  font-size: 0.95rem;
+  margin-top: 0.75rem;
+  text-align: left;
+}
