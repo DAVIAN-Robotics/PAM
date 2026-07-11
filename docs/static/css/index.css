@@ -105,3 +105,26 @@ body {
 #generalization {
   background: var(--pam-bg-alt);
 }
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.task-card__label {
+  margin-top: 0.75rem;
+}
+
+.task-card__caption {
+  color: var(--pam-gray);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1023px) {
+  .task-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .task-grid { grid-template-columns: 1fr; }
+}
