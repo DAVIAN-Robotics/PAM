@@ -1,6 +1,13 @@
 :root {
   --pam-orange: #e8710a;
   --pam-orange-soft: #fff1e2;
+  /* Memory Evolution's "new/changed" accent (Change 1): blue, to match the
+     FSM-memory series color in the paper's results figures (Fig. 5, 11, 21)
+     rather than Fig. 12's orange ink. Scoped to #memory-evolution only —
+     every other --pam-orange use on the page (e.g. .pam-table__ours in the
+     Closed-Loop section) is intentionally left alone. */
+  --pam-blue: #1a73e8;
+  --pam-blue-soft: #e8f0fe;
   --pam-gray: #5f6368;
   --pam-border: #dadce0;
   --pam-bg-alt: #f8f9fa;
@@ -135,7 +142,7 @@ body {
   width: 0.9em;
   height: 0.9em;
   border-radius: 3px;
-  background: var(--pam-orange);
+  background: var(--pam-blue);
   vertical-align: -1px;
 }
 
@@ -158,8 +165,8 @@ body {
 }
 
 .fsm__day:hover {
-  border-color: var(--pam-orange);
-  color: var(--pam-orange);
+  border-color: var(--pam-blue);
+  color: var(--pam-blue);
 }
 
 .fsm__day.is-active {
@@ -217,7 +224,7 @@ body {
    once (Day 1's meal_preparation, Day 4's cleaning_break are both new *and*
    the default-selected node). Each owns a structurally distinct,
    non-overlapping visual channel so none of them can blot out another:
-     - new      -> the main box's fill + stroke (orange), via .fsm-node__box.
+     - new      -> the main box's fill + stroke (blue), via .fsm-node__box.
                    Portable SVG paint properties, no `outline`.
      - selected -> a second, inset <rect> the JS emits only when the node is
                    selected (.fsm-node-selected-ring below), styled by its
@@ -231,17 +238,27 @@ body {
                    because it operates alongside a fully portable
                    fill/stroke/inset-rect combination for new and selected,
                    not as their only signal.
-   Net effect: new, selected, and focused each render as their own ring
-   (inner / border / outer), all visible simultaneously with no cascade or
-   z-fighting between them. */
+   IMPORTANT — this deliberately does NOT reuse --pam-blue for focus. An
+   earlier round of this exact section colored "new" and "focus" the same
+   blue-family hue at the same width, so focusing a new+selected node moved
+   ~0.19% of pixels — invisible in a screenshot, obvious in computed styles.
+   Focus is kept unmistakable on top of a blue, selected node by stacking
+   THREE differences at once against both other rings, not just color:
+   dashed (vs. the box's solid stroke and the selection ring's solid inset
+   stroke), outside the box at a 4px offset (vs. the selection ring's 5px
+   INSET), and a dark near-black (vs. blue). Net effect: new, selected, and
+   focused each render as their own ring (inner solid dark / box solid blue /
+   outer dashed dark), all visible simultaneously with no cascade or
+   z-fighting between them, and focus alone flips visibly on/off regardless
+   of which other two signals are already on the node. */
 .fsm-node:focus {
-  outline: 3px solid #1a73e8;
-  outline-offset: 3px;
+  outline: 4px dashed #202124;
+  outline-offset: 4px;
 }
 
 .fsm-node.is-new .fsm-node__box {
-  fill: var(--pam-orange-soft);
-  stroke: var(--pam-orange);
+  fill: var(--pam-blue-soft);
+  stroke: var(--pam-blue);
   stroke-width: 2;
 }
 
@@ -252,7 +269,7 @@ body {
    of specificity or source order. Because it never touches the box's
    fill/stroke, it can't collide with .is-new above — both read
    simultaneously on a new+selected node with no tie-break needed. Must
-   stay legible over both the plain white box (Day 5) and the orange
+   stay legible over both the plain white box (Day 5) and the blue
    is-new box (Day 1, Day 4), hence the dark, heavier stroke. */
 .fsm-node-selected-ring {
   fill: none;
@@ -269,7 +286,7 @@ body {
    selectors here name .fsm-node__box explicitly, so — unlike the old bare
    `rect` selectors — none of them can ever match the selection ring. */
 .fsm-node:focus .fsm-node__box,
-.fsm-node:hover .fsm-node__box { stroke: var(--pam-orange); }
+.fsm-node:hover .fsm-node__box { stroke: var(--pam-blue); }
 
 .fsm-node-title {
   font-family: 'Google Sans', sans-serif;
@@ -288,7 +305,7 @@ body {
 }
 
 .fsm-edge.is-new {
-  stroke: var(--pam-orange);
+  stroke: var(--pam-blue);
   stroke-width: 2;
 }
 
@@ -299,14 +316,14 @@ body {
 }
 
 .fsm-arrowhead { fill: var(--pam-gray); }
-.fsm-arrowhead.is-new { fill: var(--pam-orange); }
+.fsm-arrowhead.is-new { fill: var(--pam-blue); }
 
 .fsm-edge-label {
   font-size: 11px;
   fill: var(--pam-gray);
 }
 
-.fsm-edge-label.is-new { fill: var(--pam-orange); }
+.fsm-edge-label.is-new { fill: var(--pam-blue); }
 
 .fsm-rules__head h3 {
   font-family: 'Google Sans', sans-serif;
@@ -331,9 +348,9 @@ body {
 
 .fsm-rule.is-new,
 .fsm-rule.is-revised {
-  background: var(--pam-orange-soft);
-  border-color: var(--pam-orange);
-  border-left-color: var(--pam-orange);
+  background: var(--pam-blue-soft);
+  border-color: var(--pam-blue);
+  border-left-color: var(--pam-blue);
 }
 
 .fsm-rule__triggers {
@@ -342,7 +359,7 @@ body {
 }
 
 .fsm-rule__trigger.is-new {
-  color: var(--pam-orange);
+  color: var(--pam-blue);
   font-weight: 600;
 }
 
@@ -354,7 +371,7 @@ body {
 }
 
 .fsm-rule__was {
-  color: var(--pam-orange);
+  color: var(--pam-blue);
   font-size: 0.85rem;
   margin-top: 0.35rem;
 }
@@ -412,4 +429,11 @@ body {
   position: absolute;
   right: 0.75rem;
   top: 0.75rem;
+}
+
+/* --- bibtex --- */
+.bibtex__note {
+  color: var(--pam-gray);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
 }
