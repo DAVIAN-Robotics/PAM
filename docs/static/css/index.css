@@ -65,6 +65,19 @@ body {
   margin-right: 0.35rem;
 }
 
+/* Author links stay in the subtitle's own color -- Bulma's default link blue
+   would turn the byline into a row of buttons. The hairline underline is what
+   says "clickable". */
+.pam-authors a {
+  border-bottom: 1px solid var(--pam-border);
+  color: inherit;
+}
+
+.pam-authors a:hover {
+  border-bottom-color: var(--pam-blue);
+  color: var(--pam-blue);
+}
+
 .pam-affiliation {
   font-size: 1.15rem;
   margin-top: 0.5rem;
