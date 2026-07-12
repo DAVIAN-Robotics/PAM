@@ -1,0 +1,293 @@
+{
+  "days": [
+    {
+      "id": "day1",
+      "label": "Day 1",
+      "caption": "The first reflection installs the skeleton: four states and two rules — bring the cereal, put the bowl away.",
+      "states": [
+        {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": true},
+        {"id": "eating", "desc": "Person is consuming the meal.", "isNew": true},
+        {"id": "working", "desc": "Person is working on the laptop.", "isNew": true},
+        {"id": "leaving", "desc": "Person is leaving the desk.", "isNew": true}
+      ],
+      "transitions": [
+        {"from": "meal_preparation", "to": "eating", "label": "Person picks up a spoon", "isNew": true},
+        {"from": "eating", "to": "working", "label": "Person starts typing", "isNew": true},
+        {"from": "working", "to": "leaving", "label": "Person closes laptop", "isNew": true}
+      ],
+      "rules": {
+        "meal_preparation": [
+          {"triggers": [{"text": "Person places a bowl on the desk", "isNew": true}],
+           "action": "Pick up the cereal bag and place it next to the person.", "isNew": true}
+        ],
+        "eating": [
+          {"triggers": [{"text": "Person opens laptop", "isNew": true}],
+           "action": "Pick up the empty bowl and place it in the designated storage area.", "isNew": true}
+        ],
+        "working": [],
+        "leaving": []
+      }
+    },
+    {
+      "id": "day2",
+      "label": "Day 2",
+      "caption": "The bring-milk rule appears, and the bring-cereal trigger broadens: sitting down is enough, the bowl need not be on the desk yet.",
+      "states": [
+        {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
+        {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
+        {"id": "working", "desc": "Person is working on the laptop.", "isNew": false},
+        {"id": "leaving", "desc": "Person is leaving the desk.", "isNew": false}
+      ],
+      "transitions": [
+        {"from": "meal_preparation", "to": "eating", "label": "Person picks up a spoon", "isNew": false},
+        {"from": "eating", "to": "working", "label": "Person starts typing", "isNew": false},
+        {"from": "working", "to": "leaving", "label": "Person closes laptop", "isNew": false}
+      ],
+      "rules": {
+        "meal_preparation": [
+          {"triggers": [
+             {"text": "Person places a bowl on the desk", "isNew": false},
+             {"text": "Person sits down at the desk", "isNew": true}
+           ],
+           "action": "Pick up the cereal bag and place it next to the person.", "isNew": false},
+          {"triggers": [{"text": "Person pours cereal into the bowl", "isNew": true}],
+           "action": "Pick up the milk bottle and place it next to the person.", "isNew": true}
+        ],
+        "eating": [
+          {"triggers": [{"text": "Person opens laptop", "isNew": false}],
+           "action": "Pick up the empty bowl and place it in the designated storage area.", "isNew": false}
+        ],
+        "working": [],
+        "leaving": []
+      }
+    },
+    {
+      "id": "day3",
+      "label": "Day 3",
+      "caption": "Both put-away rules arrive. Neither can trigger on the object it moves, so the reflector fires them on the user reaching for the next ingredient instead.",
+      "states": [
+        {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
+        {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
+        {"id": "working", "desc": "Person is working on the laptop.", "isNew": false},
+        {"id": "leaving", "desc": "Person is leaving the desk.", "isNew": false}
+      ],
+      "transitions": [
+        {"from": "meal_preparation", "to": "eating", "label": "Person picks up a spoon", "isNew": false},
+        {"from": "eating", "to": "working", "label": "Person starts typing", "isNew": false},
+        {"from": "working", "to": "leaving", "label": "Person closes laptop", "isNew": false}
+      ],
+      "rules": {
+        "meal_preparation": [
+          {"triggers": [
+             {"text": "Person places a bowl on the desk", "isNew": false},
+             {"text": "Person sits down at the desk", "isNew": false}
+           ],
+           "action": "Pick up the cereal bag and place it next to the person.", "isNew": false},
+          {"triggers": [
+             {"text": "Person pours cereal into the bowl", "isNew": false},
+             {"text": "Person places the cereal bag on the desk", "isNew": true}
+           ],
+           "action": "Pick up the milk bottle and place it next to the person.", "isNew": false},
+          {"triggers": [{"text": "Person reaches for the milk bottle", "isNew": true}],
+           "action": "Pick up the cereal bag and place it in the designated storage area.", "isNew": true},
+          {"triggers": [{"text": "Person picks up a spoon", "isNew": true}],
+           "action": "Pick up the milk bottle and place it in the designated storage area.", "isNew": true}
+        ],
+        "eating": [
+          {"triggers": [
+             {"text": "Person opens laptop", "isNew": false},
+             {"text": "Person puts down the spoon", "isNew": true}
+           ],
+           "action": "Pick up the empty bowl and place it in the designated storage area.", "isNew": false}
+        ],
+        "working": [],
+        "leaving": []
+      }
+    },
+    {
+      "id": "day4",
+      "label": "Day 4",
+      "caption": "A new cleaning_break state appears with the wet-wipe rule, looping out of and back into working. Both put-away triggers broaden again.",
+      "states": [
+        {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
+        {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
+        {"id": "working", "desc": "Person is working on the laptop.", "isNew": false},
+        {"id": "cleaning_break", "desc": "Person is cleaning hands after eating.", "isNew": true},
+        {"id": "leaving", "desc": "Person is leaving the desk.", "isNew": false}
+      ],
+      "transitions": [
+        {"from": "meal_preparation", "to": "eating", "label": "Person picks up a spoon", "isNew": false},
+        {"from": "eating", "to": "working", "label": "Person starts typing", "isNew": false},
+        {"from": "working", "to": "cleaning_break", "label": "Person reaches for wet wipes", "isNew": true},
+        {"from": "cleaning_break", "to": "working", "label": "Person types on the laptop", "isNew": true},
+        {"from": "working", "to": "leaving", "label": "Person closes laptop", "isNew": false}
+      ],
+      "rules": {
+        "meal_preparation": [
+          {"triggers": [
+             {"text": "Person places a bowl on the desk", "isNew": false},
+             {"text": "Person sits down at the desk", "isNew": false}
+           ],
+           "action": "Pick up the cereal bag and place it next to the person.", "isNew": false},
+          {"triggers": [
+             {"text": "Person pours cereal into the bowl", "isNew": false},
+             {"text": "Person places the cereal bag on the desk", "isNew": false}
+           ],
+           "action": "Pick up the milk bottle and place it next to the person.", "isNew": false},
+          {"triggers": [
+             {"text": "Person reaches for the milk bottle", "isNew": false},
+             {"text": "Person finishes pouring cereal", "isNew": true}
+           ],
+           "action": "Pick up the cereal bag and place it in the designated storage area.", "isNew": false},
+          {"triggers": [
+             {"text": "Person picks up a spoon", "isNew": false},
+             {"text": "Person finishes pouring milk", "isNew": true}
+           ],
+           "action": "Pick up the milk bottle and place it in the designated storage area.", "isNew": false}
+        ],
+        "eating": [
+          {"triggers": [
+             {"text": "Person opens laptop", "isNew": false},
+             {"text": "Person puts down the spoon", "isNew": false}
+           ],
+           "action": "Pick up the empty bowl and place it in the designated storage area.", "isNew": false}
+        ],
+        "working": [],
+        "cleaning_break": [
+          {"triggers": [{"text": "Person starts typing", "isNew": true}],
+           "action": "Pick up the used wet wipe and place it in the trash can.", "isNew": true}
+        ],
+        "leaving": []
+      }
+    },
+    {
+      "id": "day5",
+      "label": "Day 5",
+      "caption": "No new rules and no new states. The reflector only finishes broadening the remaining triggers, so the robot fires earlier — first-fire delay is down to about one second.",
+      "states": [
+        {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
+        {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
+        {"id": "working", "desc": "Person is working on the laptop.", "isNew": false},
+        {"id": "cleaning_break", "desc": "Person is cleaning hands after eating.", "isNew": false},
+        {"id": "leaving", "desc": "Person is leaving the desk.", "isNew": false}
+      ],
+      "transitions": [
+        {"from": "meal_preparation", "to": "eating", "label": "Person picks up a spoon", "isNew": false},
+        {"from": "eating", "to": "working", "label": "Person starts typing", "isNew": false},
+        {"from": "working", "to": "cleaning_break", "label": "Person reaches for wet wipes", "isNew": false},
+        {"from": "cleaning_break", "to": "working", "label": "Person types on the laptop", "isNew": false},
+        {"from": "working", "to": "leaving", "label": "Person closes laptop", "isNew": false}
+      ],
+      "rules": {
+        "meal_preparation": [
+          {"triggers": [
+             {"text": "Person places a bowl on the desk", "isNew": false},
+             {"text": "Person sits down at the desk", "isNew": false}
+           ],
+           "action": "Pick up the cereal bag and place it next to the person.", "isNew": false},
+          {"triggers": [
+             {"text": "Person pours cereal into the bowl", "isNew": false},
+             {"text": "Person places the cereal bag on the desk", "isNew": false}
+           ],
+           "action": "Pick up the milk bottle and place it next to the person.", "isNew": false},
+          {"triggers": [
+             {"text": "Person reaches for the milk bottle", "isNew": false},
+             {"text": "Person finishes pouring cereal", "isNew": false},
+             {"text": "Person places the cereal bag on the desk", "isNew": true}
+           ],
+           "action": "Pick up the cereal bag and place it in the designated storage area.", "isNew": false},
+          {"triggers": [
+             {"text": "Person picks up a spoon", "isNew": false},
+             {"text": "Person finishes pouring milk", "isNew": false},
+             {"text": "Person places the milk bottle on the desk", "isNew": true}
+           ],
+           "action": "Pick up the milk bottle and place it in the designated storage area.", "isNew": false}
+        ],
+        "eating": [
+          {"triggers": [
+             {"text": "Person opens laptop", "isNew": false},
+             {"text": "Person puts down the spoon", "isNew": false},
+             {"text": "Person places the empty bowl on the desk", "isNew": true}
+           ],
+           "action": "Pick up the empty bowl and place it in the designated storage area.", "isNew": false}
+        ],
+        "working": [],
+        "cleaning_break": [
+          {"triggers": [
+             {"text": "Person starts typing", "isNew": false},
+             {"text": "Person finishes wiping", "isNew": true},
+             {"text": "Person places the used wet wipe on the desk", "isNew": true}
+           ],
+           "action": "Pick up the used wet wipe and place it in the trash can.", "isNew": false}
+        ],
+        "leaving": []
+      }
+    },
+    {
+      "id": "routine-change",
+      "label": "Routine Change",
+      "caption": "The user starts taking medication before eating. The reflector does not append a rule — it rewrites one: sitting down now means deliver the pill, and the cereal moves behind it.",
+      "states": [
+        {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
+        {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
+        {"id": "working", "desc": "Person is working on the laptop.", "isNew": false},
+        {"id": "cleaning_break", "desc": "Person is cleaning hands after eating.", "isNew": false},
+        {"id": "leaving", "desc": "Person is leaving the desk.", "isNew": false}
+      ],
+      "transitions": [
+        {"from": "meal_preparation", "to": "eating", "label": "Person picks up a spoon", "isNew": false},
+        {"from": "eating", "to": "working", "label": "Person starts typing", "isNew": false},
+        {"from": "working", "to": "cleaning_break", "label": "Person reaches for wet wipes", "isNew": false},
+        {"from": "cleaning_break", "to": "working", "label": "Person types on the laptop", "isNew": false},
+        {"from": "working", "to": "leaving", "label": "Person closes laptop", "isNew": false}
+      ],
+      "rules": {
+        "meal_preparation": [
+          {"triggers": [
+             {"text": "Person places a bowl on the desk", "isNew": false},
+             {"text": "Person sits down at the desk", "isNew": false}
+           ],
+           "action": "Pick up the pill and place it next to the person.", "isNew": false, "isRevised": true,
+           "wasAction": "Pick up the cereal bag and place it next to the person."},
+          {"triggers": [{"text": "Person picks up the pill", "isNew": true}],
+           "action": "Pick up the cereal bag and place it next to the person.", "isNew": true},
+          {"triggers": [
+             {"text": "Person pours cereal into the bowl", "isNew": false},
+             {"text": "Person places the cereal bag on the desk", "isNew": false}
+           ],
+           "action": "Pick up the milk bottle and place it next to the person.", "isNew": false},
+          {"triggers": [
+             {"text": "Person reaches for the milk bottle", "isNew": false},
+             {"text": "Person finishes pouring cereal", "isNew": false},
+             {"text": "Person places the cereal bag on the desk", "isNew": false}
+           ],
+           "action": "Pick up the cereal bag and place it in the designated storage area.", "isNew": false},
+          {"triggers": [
+             {"text": "Person picks up a spoon", "isNew": false},
+             {"text": "Person finishes pouring milk", "isNew": false},
+             {"text": "Person places the milk bottle on the desk", "isNew": false}
+           ],
+           "action": "Pick up the milk bottle and place it in the designated storage area.", "isNew": false}
+        ],
+        "eating": [
+          {"triggers": [
+             {"text": "Person opens laptop", "isNew": false},
+             {"text": "Person puts down the spoon", "isNew": false},
+             {"text": "Person places the empty bowl on the desk", "isNew": false}
+           ],
+           "action": "Pick up the empty bowl and place it in the designated storage area.", "isNew": false}
+        ],
+        "working": [],
+        "cleaning_break": [
+          {"triggers": [
+             {"text": "Person starts typing", "isNew": false},
+             {"text": "Person finishes wiping", "isNew": false},
+             {"text": "Person places the used wet wipe on the desk", "isNew": false}
+           ],
+           "action": "Pick up the used wet wipe and place it in the trash can.", "isNew": false}
+        ],
+        "leaving": []
+      }
+    }
+  ]
+}
