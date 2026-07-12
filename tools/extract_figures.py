@@ -16,12 +16,10 @@ X0, X1 = 0.10, 0.90  # text margins, used by full-width figures
 
 # name -> (1-indexed page, y0 fraction, y1 fraction)
 # Entries may optionally be (page, x0, x1, y0, y1) to override the shared
-# X0/X1 text-margin crop -- fig3 is a right-column inset figure with text
-# wrapped on its left, not a full-width figure like the rest.
+# X0/X1 text-margin crop for figures that aren't full-width.
 FIGURES = {
     "fig1_motivation":          (2,  0.06, 0.28),
     "fig2_overview":            (3,  0.06, 0.26),
-    "fig3_pam_example":         (4,  0.565, 0.94, 0.545, 0.785),
     "fig4_tasks":               (5,  0.06, 0.193),
     "fig5_multiday":            (6,  0.06, 0.31),
     "fig7_memory_evolution":    (8,  0.06, 0.305),
