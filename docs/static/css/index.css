@@ -390,3 +390,26 @@ body {
 @media (max-width: 768px) {
   .compare-grid { grid-template-columns: 1fr; }
 }
+
+/* --- bibtex --- */
+.bibtex {
+  position: relative;
+}
+
+.bibtex pre {
+  background: var(--pam-bg-alt);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  overflow-x: auto;
+  /* Extra top padding clears the absolutely-positioned .bibtex__copy button
+     (top: 0.75rem, ~2rem tall) so it never sits on top of the first line of
+     BibTeX text -- most visible at narrow widths where the first line is
+     long relative to the container. */
+  padding: 3rem 1.25rem 1.25rem;
+}
+
+.bibtex__copy {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+}

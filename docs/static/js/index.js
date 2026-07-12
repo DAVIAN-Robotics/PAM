@@ -12,6 +12,19 @@ function setupVideoSlots() {
   });
 }
 
+function setupBibtexCopy() {
+  const button = document.getElementById('bibtex-copy');
+  const pre = document.getElementById('bibtex-text');
+  if (!button || !pre) return;
+  button.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(pre.textContent);
+    const label = button.querySelector('span:last-child');
+    label.textContent = 'Copied';
+    setTimeout(() => { label.textContent = 'Copy'; }, 1500);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   setupVideoSlots();
+  setupBibtexCopy();
 });
