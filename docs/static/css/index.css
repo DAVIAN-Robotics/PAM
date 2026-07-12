@@ -194,14 +194,13 @@ body {
 }
 
 .fsm-node { cursor: pointer; }
-.fsm-node:focus { outline: none; }
-.fsm-node:focus rect,
-.fsm-node:hover rect { stroke: var(--pam-orange); }
 
-.fsm-node.is-selected rect {
-  fill: #f1f3f4;
-  stroke: #202124;
-  stroke-width: 2;
+/* Visible keyboard-focus ring on the group itself. This is a property
+   neither .is-new nor .is-selected below ever sets, so it survives no
+   matter which state classes are also present on the node. */
+.fsm-node:focus {
+  outline: 2px solid var(--pam-orange);
+  outline-offset: 2px;
 }
 
 .fsm-node.is-new rect {
@@ -209,6 +208,36 @@ body {
   stroke: var(--pam-orange);
   stroke-width: 2;
 }
+
+/* Selection is marked with an outline ring on the rect, a property .is-new
+   never touches — so "selected" stays visible regardless of source order
+   relative to .is-new below. */
+.fsm-node.is-selected rect {
+  fill: #f1f3f4;
+  stroke: #202124;
+  stroke-width: 2;
+  outline: 2px solid #202124;
+  outline-offset: 3px;
+}
+
+/* Explicit combo rule for nodes that are both new and selected (Day 1's
+   meal_preparation, Day 4's cleaning_break — the default view on two of six
+   days). Three classes beats either single-state rule's two classes on
+   specificity, so this wins deterministically — not by accident of source
+   order the way the two rules above would collide if merged. */
+.fsm-node.is-new.is-selected rect {
+  fill: #f1f3f4;
+  stroke: #202124;
+  stroke-width: 3;
+  outline: 2px solid var(--pam-orange);
+  outline-offset: 3px;
+}
+
+/* :hover / :focus feedback must win over whatever state color is showing,
+   so they're declared after the state-class rules above and rely on source
+   order for that tie-break (same specificity as .fsm-node.is-new rect). */
+.fsm-node:focus rect,
+.fsm-node:hover rect { stroke: var(--pam-orange); }
 
 .fsm-node-title {
   font-family: 'Google Sans', sans-serif;

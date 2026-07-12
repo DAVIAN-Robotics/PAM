@@ -231,19 +231,20 @@
   <section class="section" id="memory-evolution">
     <div class="container is-max-widescreen">
       <h2 class="title is-3 section-heading has-text-centered">Watch the Memory Write Itself</h2>
-      <p class="content is-medium has-text-centered" style="max-width: 820px; margin: 0 auto 2rem;">
-        Every night, the reflector watches the day's recording and edits PAM. Step through the days
-        to see what it changed. <span class="fsm-legend-swatch"></span> marks what the reflection at
-        the end of the previous day added.
+      <p class="content is-medium has-text-centered" id="fsm-intro" style="max-width: 820px; margin: 0 auto 2rem;">
+        Every night, the reflector watches the day's recording and edits PAM.
+        <span id="fsm-intro-interactive">Step through the days to see what it changed.
+        <span class="fsm-legend-swatch"></span> marks what the reflection at the end of the
+        previous day added.</span>
       </p>
 
       <div class="fsm" id="fsm" hidden>
         <div class="fsm__days" id="fsm-days" role="tablist" aria-label="Day"></div>
         <p class="fsm__caption" id="fsm-caption"></p>
 
-        <div class="fsm__panes">
+        <div class="fsm__panes" id="fsm-panel" role="tabpanel" tabindex="0">
           <div class="fsm__graph">
-            <svg id="fsm-svg" viewBox="0 0 540 560" role="img" aria-label="Finite-state machine of the user's routine"></svg>
+            <svg id="fsm-svg" viewBox="0 0 540 560" role="group" aria-label="Finite-state machine of the user's routine"></svg>
           </div>
           <div class="fsm__rules" id="fsm-rules"></div>
         </div>
@@ -253,8 +254,7 @@
         <img src="static/images/fig7_memory_evolution.png"
              alt="The FSM memory on Day 3, Day 5, and after a routine change.">
         <p class="figure-caption">
-          The interactive view could not load, so here is the same content as it appears in the
-          paper (Fig. 7).
+          The FSM memory on Day 3, Day 5, and after the routine change (paper, Fig. 7).
         </p>
       </div>
     </div>
