@@ -207,7 +207,11 @@ body {
   stroke-width: 1.5;
 }
 
-.fsm-node { cursor: pointer; }
+/* transform-box/transform-origin only matter while the entrance animation
+   in memory-evolution.js is actively applying a transform (a new node
+   scaling up from its center) — with no transform in play they're inert, so
+   this is safe to set unconditionally rather than only on `.is-new`. */
+.fsm-node { cursor: pointer; transform-box: fill-box; transform-origin: center; }
 
 /* Three signals (new / selected / focused) can land on the same node at
    once (Day 1's meal_preparation, Day 4's cleaning_break are both new *and*

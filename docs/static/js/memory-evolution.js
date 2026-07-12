@@ -72,6 +72,70 @@
     },
   };
 
+  // --- animation layer ---------------------------------------------------
+  //
+  // Everything below animates a day's *arrival* on top of an already-final
+  // DOM: drawGraph/drawRules always build the exact same classes/attributes
+  // they built before this file grew an animation layer — isNew/isRevised
+  // styling is untouched CSS, applied unconditionally. The animation is a
+  // purely cosmetic Web Animations API layer bolted on top of that final
+  // DOM, which gives us two properties for free:
+  //
+  //   1. prefers-reduced-motion is satisfied by simply never calling
+  //      .animate() — the DOM these functions build is already the final,
+  //      correct state with no animation involved.
+  //   2. Cancelling mid-flight is always safe: an Animation's .cancel() call
+  //      unconditionally removes its effect and reverts the target to its
+  //      underlying (non-animated, final) style, regardless of fill mode or
+  //      how far through the animation it was. We never hand-write a
+  //      "hidden" state into an element's real style/class — only into
+  //      keyframes — so there is nothing for a cancel to get stuck in.
+  const DUR = {
+    nodeEnter: 240,
+    edgeDraw: 260,
+    edgeStagger: 80,
+    edgeAfterNewNode: 120,
+    arrowFade: 100,
+    cardRise: 220,
+    cardStagger: 90,
+    triggerPulse: 420,
+    revisedWas: 340,
+    revisedAction: 260,
+    revisedActionDelay: 160,
+  };
+
+  const reduceMotionQuery = typeof matchMedia === 'function'
+    ? matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+  function reduceMotion() {
+    return !!(reduceMotionQuery && reduceMotionQuery.matches);
+  }
+  // A render only ever animates when it was triggered by a day switch *and*
+  // the visitor hasn't asked for reduced motion. Selecting a state (clicking
+  // a node) always passes animate=false at the call site, regardless of this
+  // check, so it never needs to consult reduceMotion() itself.
+  function shouldAnimate(animate) {
+    return !!animate && !reduceMotion();
+  }
+
+  // Every Animation object currently in flight, so a new render (day switch
+  // or state click, whichever comes first) can cancel stragglers before
+  // building the next frame. Belt-and-suspenders alongside svg.replaceChildren
+  // / container.replaceChildren, which already detach the old animated
+  // elements — explicit cancellation just means we never leave an Animation
+  // running against a detached node.
+  let activeAnimations = [];
+  function trackAnim(anim) {
+    if (anim) activeAnimations.push(anim);
+    return anim;
+  }
+  function cancelActiveAnimations() {
+    for (const a of activeAnimations) {
+      try { a.cancel(); } catch (_) { /* already finished/idle — fine */ }
+    }
+    activeAnimations = [];
+  }
+
   function el(name, attrs = {}, text = null) {
     const node = document.createElementNS(SVG_NS, name);
     for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
@@ -79,39 +143,149 @@
     return node;
   }
 
-  function drawGraph(svg, day, selectedState, onSelect) {
+  // New state node: scales up from center and fades in.
+  function animateNodeEnter(g) {
+    trackAnim(g.animate(
+      [
+        { opacity: 0, transform: 'scale(0.85)' },
+        { opacity: 1, transform: 'scale(1)' },
+      ],
+      { duration: DUR.nodeEnter, easing: 'ease-out' },
+    ));
+  }
+
+  // New transition: the line draws itself (stroke-dasharray/dashoffset),
+  // then the arrowhead and label fade in right as it lands. `baseDelay`
+  // lets callers stagger several new edges, and push them all behind a
+  // newly-arriving node so an edge never appears to land on empty space.
+  function animateEdgeDraw(path, arrowPath, label, baseDelay) {
+    const length = path.getTotalLength();
+    trackAnim(path.animate(
+      [
+        { strokeDasharray: `${length} ${length}`, strokeDashoffset: `${length}` },
+        { strokeDasharray: `${length} ${length}`, strokeDashoffset: '0' },
+      ],
+      { duration: DUR.edgeDraw, delay: baseDelay, easing: 'ease-out', fill: 'backwards' },
+    ));
+    const landDelay = baseDelay + Math.max(DUR.edgeDraw - DUR.arrowFade, 0);
+    trackAnim(arrowPath.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: DUR.arrowFade, delay: landDelay, easing: 'ease-out', fill: 'backwards' },
+    ));
+    trackAnim(label.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: DUR.arrowFade, delay: landDelay, easing: 'ease-out', fill: 'backwards' },
+    ));
+  }
+
+  // New rule card: rises and fades in. `delay` staggers several new cards on
+  // the same day so they arrive one after another rather than all at once.
+  function animateCardEnter(card, delay) {
+    trackAnim(card.animate(
+      [
+        { opacity: 0, transform: 'translateY(10px)' },
+        { opacity: 1, transform: 'translateY(0)' },
+      ],
+      { duration: DUR.cardRise, delay, easing: 'ease-out', fill: 'backwards' },
+    ));
+  }
+
+  // A new or-clause on an existing trigger: a brief highlight pulse that
+  // settles into the orange resting state already painted by
+  // .fsm-rule__trigger.is-new. Only the temporary background is animated —
+  // the text's own color/weight are the permanent CSS and never touched
+  // here — so once the pulse finishes (or is cancelled) the span reverts
+  // straight to its normal, final appearance.
+  function animateTriggerPulse(span) {
+    trackAnim(span.animate(
+      [
+        { backgroundColor: 'rgba(232, 113, 10, 0.35)' },
+        { backgroundColor: 'rgba(232, 113, 10, 0)' },
+      ],
+      { duration: DUR.triggerPulse, easing: 'ease-out' },
+    ));
+  }
+
+  // The revised rule (Routine Change only): the old action visibly gives way
+  // to the new one. wasEl briefly reads like the old primary action — struck
+  // through, slightly enlarged — then settles into its normal small
+  // "revised — previously: …" caption size exactly as it always renders.
+  // actionEl fades/slides into the primary slot a beat later, so the new
+  // action visibly *replaces* the old rather than the two just co-appearing.
+  function animateRevisedCard(actionEl, wasEl) {
+    trackAnim(wasEl.animate(
+      [
+        { textDecorationLine: 'line-through', transform: 'scale(1.05)' },
+        { textDecorationLine: 'line-through', transform: 'scale(1.05)', offset: 0.55 },
+        { textDecorationLine: 'none', transform: 'scale(1)' },
+      ],
+      { duration: DUR.revisedWas, easing: 'ease-out' },
+    ));
+    trackAnim(actionEl.animate(
+      [
+        { opacity: 0, transform: 'translateY(6px)' },
+        { opacity: 1, transform: 'translateY(0)' },
+      ],
+      {
+        duration: DUR.revisedAction,
+        delay: DUR.revisedActionDelay,
+        easing: 'ease-out',
+        fill: 'backwards',
+      },
+    ));
+  }
+
+  function drawGraph(svg, day, selectedState, onSelect, animate) {
     svg.replaceChildren();
     svg.setAttribute('viewBox', VIEWBOX);
     const present = new Set(day.states.map((s) => s.id));
+    const animateThisRender = shouldAnimate(animate);
+    const nodeIsArriving = animateThisRender && day.states.some((s) => s.isNew);
 
     const defs = el('defs');
-    for (const [id, cls] of [['arrow', 'fsm-arrowhead'], ['arrow-new', 'fsm-arrowhead is-new']]) {
-      const marker = el('marker', {
-        id, viewBox: '0 0 10 10', refX: '8.5', refY: '5',
-        markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse',
-      });
-      marker.appendChild(el('path', { d: 'M 0 0 L 10 5 L 0 10 z', class: cls }));
-      defs.appendChild(marker);
-    }
     svg.appendChild(defs);
 
-    // Edges first, so nodes paint over their endpoints.
+    // Edges first, so nodes paint over their endpoints. Each edge gets its
+    // own <marker> instance (rather than two markers shared by every edge)
+    // so a new edge's arrowhead can fade in on its own timeline without
+    // dragging every other edge's arrowhead along with it.
+    let newEdgeIndex = 0;
     for (const t of day.transitions) {
       if (!present.has(t.from) || !present.has(t.to)) continue;
       const route = EDGE_ROUTES[`${t.from}->${t.to}`];
       if (!route) continue; // shouldn't happen with the current data, but stay safe
 
+      const markerId = `fsm-arrow-${t.from}-${t.to}`;
+      const marker = el('marker', {
+        id: markerId, viewBox: '0 0 10 10', refX: '8.5', refY: '5',
+        markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse',
+      });
+      const arrowCls = `fsm-arrowhead${t.isNew ? ' is-new' : ''}`;
+      const arrowPath = el('path', { d: 'M 0 0 L 10 5 L 0 10 z', class: arrowCls });
+      marker.appendChild(arrowPath);
+      defs.appendChild(marker);
+
       const cls = ['fsm-edge']
         .concat(t.isNew ? ['is-new'] : [])
         .concat(route.isBack ? ['fsm-edge--back'] : [])
         .join(' ');
-      const markerId = t.isNew ? 'arrow-new' : 'arrow';
-      svg.appendChild(el('path', { d: route.d, class: cls, fill: 'none', 'marker-end': `url(#${markerId})` }));
+      const path = el('path', { d: route.d, class: cls, fill: 'none', 'marker-end': `url(#${markerId})` });
+      svg.appendChild(path);
 
       const labelCls = `fsm-edge-label${t.isNew ? ' is-new' : ''}`;
-      svg.appendChild(el('text', {
+      const label = el('text', {
         x: route.label.x, y: route.label.y, class: labelCls, 'text-anchor': route.label.anchor,
-      }, t.label));
+      }, t.label);
+      svg.appendChild(label);
+
+      if (animateThisRender && t.isNew) {
+        // Let a newly-arriving node finish taking shape before its edges
+        // start growing out of it, then stagger the edges themselves.
+        const baseDelay = (nodeIsArriving ? DUR.edgeAfterNewNode : 0)
+          + newEdgeIndex * DUR.edgeStagger;
+        animateEdgeDraw(path, arrowPath, label, baseDelay);
+        newEdgeIndex += 1;
+      }
     }
 
     for (const s of day.states) {
@@ -162,13 +336,16 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(s.id); }
       });
       svg.appendChild(g);
+
+      if (animateThisRender && s.isNew) animateNodeEnter(g);
     }
   }
 
-  function drawRules(container, day, stateId) {
+  function drawRules(container, day, stateId, animate) {
     const state = day.states.find((s) => s.id === stateId);
     const rules = day.rules[stateId] || [];
     container.replaceChildren();
+    const animateThisRender = shouldAnimate(animate);
 
     const head = document.createElement('div');
     head.className = 'fsm-rules__head';
@@ -188,6 +365,7 @@
       return;
     }
 
+    let newCardIndex = 0;
     for (const rule of rules) {
       const card = document.createElement('div');
       card.className = 'fsm-rule'
@@ -197,6 +375,7 @@
       const trig = document.createElement('p');
       trig.className = 'fsm-rule__triggers';
       trig.appendChild(document.createTextNode('when '));
+      const newTriggerSpans = [];
       rule.triggers.forEach((t, i) => {
         if (i > 0) {
           const or = document.createElement('span');
@@ -208,6 +387,7 @@
         span.className = `fsm-rule__trigger${t.isNew ? ' is-new' : ''}`;
         span.textContent = t.text;
         trig.appendChild(span);
+        if (t.isNew) newTriggerSpans.push(span);
       });
       card.appendChild(trig);
 
@@ -216,14 +396,30 @@
       act.textContent = rule.action;
       card.appendChild(act);
 
+      let was = null;
       if (rule.isRevised && rule.wasAction) {
-        const was = document.createElement('p');
+        was = document.createElement('p');
         was.className = 'fsm-rule__was';
         was.textContent = `revised — previously: ${rule.wasAction}`;
         card.appendChild(was);
       }
 
       container.appendChild(card);
+
+      if (animateThisRender) {
+        if (rule.isRevised && was) {
+          // The strongest moment on the page: the rewrite, not an append.
+          animateRevisedCard(act, was);
+        } else if (rule.isNew) {
+          animateCardEnter(card, newCardIndex * DUR.cardStagger);
+          newCardIndex += 1;
+        } else if (newTriggerSpans.length) {
+          // An existing, unrevised rule that only broadened a trigger this
+          // day (Day 5's defining case: no new states, no new rules, only
+          // new or-clauses on otherwise-unchanged rules).
+          newTriggerSpans.forEach((span) => animateTriggerPulse(span));
+        }
+      }
     }
   }
 
@@ -290,7 +486,13 @@
     let dayIndex = 0;
     let stateId = defaultState(data.days[0]);
 
-    function render() {
+    // animate=true only when this render is the direct result of a day
+    // switch (activate()). A state selection (clicking a node) always
+    // renders with animate=false, so re-picking a node never replays that
+    // day's arrival animation — it's a selection change, not a day change.
+    function render(animate) {
+      cancelActiveAnimations();
+
       const day = data.days[dayIndex];
       // A day with zero states can never satisfy `.some(...)` below no
       // matter what stateId already holds, so a naive "is stateId still
@@ -307,8 +509,8 @@
       if (!stateIsValid) stateId = defaultState(day);
 
       caption.textContent = day.caption;
-      drawGraph(svg, day, stateId, (id) => { stateId = id; render(); });
-      drawRules(rules, day, stateId);
+      drawGraph(svg, day, stateId, (id) => { stateId = id; render(false); }, animate);
+      drawRules(rules, day, stateId, animate);
 
       [...tabs.children].forEach((btn, i) => {
         const active = i === dayIndex;
@@ -326,7 +528,7 @@
     function activate(index) {
       dayIndex = index;
       stateId = defaultState(data.days[index]);
-      render();
+      render(true);
     }
 
     data.days.forEach((day, i) => {
@@ -355,7 +557,7 @@
 
     fallback.hidden = true;
     root.hidden = false;
-    render();
+    render(false);
   }
 
   document.addEventListener('DOMContentLoaded', setupMemoryEvolution);
