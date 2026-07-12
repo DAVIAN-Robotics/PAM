@@ -195,12 +195,30 @@ body {
 
 .fsm-node { cursor: pointer; }
 
-/* Visible keyboard-focus ring on the group itself. This is a property
-   neither .is-new nor .is-selected below ever sets, so it survives no
-   matter which state classes are also present on the node. */
+/* Three states (new / selected / focused) can land on the same node at
+   once (Day 1's meal_preparation, Day 4's cleaning_break are both new *and*
+   the default-selected node). Rather than layer competing rules on the same
+   rect — which is how the old outline-on-outline collision happened — each
+   state now owns a structurally distinct, non-overlapping visual channel:
+     - new      -> the main <rect>'s fill + stroke (orange). Portable SVG
+                   paint properties, no `outline`.
+     - selected -> a second, inset <rect> the JS emits only when the node is
+                   selected (.fsm-node-selected-ring below). It sits well
+                   inside the main rect's border, so it never competes with
+                   the "new" fill/stroke for the same pixels.
+     - focused  -> `outline` on the <g>, offset *outside* the main rect. This
+                   is the one appropriate use of `outline` here — focus rings
+                   are a UA convention and this is the only ring that isn't
+                   also required to survive non-Blink `outline`-on-SVG gaps
+                   (§ finding 2) because it operates alongside a fully
+                   portable fill/stroke/inset-rect combination for new and
+                   selected, not as their only signal.
+   Net effect: new, selected, and focused each render as their own ring
+   (inner / border / outer), all visible simultaneously with no cascade or
+   z-fighting between them. */
 .fsm-node:focus {
-  outline: 2px solid var(--pam-orange);
-  outline-offset: 2px;
+  outline: 3px solid #1a73e8;
+  outline-offset: 3px;
 }
 
 .fsm-node.is-new rect {
@@ -209,33 +227,27 @@ body {
   stroke-width: 2;
 }
 
-/* Selection is marked with an outline ring on the rect, a property .is-new
-   never touches — so "selected" stays visible regardless of source order
-   relative to .is-new below. */
-.fsm-node.is-selected rect {
-  fill: #f1f3f4;
+/* Selection ring: a separate inset <rect> (emitted by drawGraph in
+   memory-evolution.js only when the node is selected), not a style on the
+   main rect. Because it never touches the main rect's fill/stroke, it can't
+   collide with .is-new above — both read simultaneously on a new+selected
+   node without any specificity tie-break needed. */
+.fsm-node-selected-ring {
+  fill: none;
   stroke: #202124;
-  stroke-width: 2;
-  outline: 2px solid #202124;
-  outline-offset: 3px;
+  stroke-width: 2.5;
+  pointer-events: none;
 }
 
-/* Explicit combo rule for nodes that are both new and selected (Day 1's
-   meal_preparation, Day 4's cleaning_break — the default view on two of six
-   days). Three classes beats either single-state rule's two classes on
-   specificity, so this wins deterministically — not by accident of source
-   order the way the two rules above would collide if merged. */
-.fsm-node.is-new.is-selected rect {
-  fill: #f1f3f4;
-  stroke: #202124;
-  stroke-width: 3;
-  outline: 2px solid var(--pam-orange);
-  outline-offset: 3px;
-}
-
-/* :hover / :focus feedback must win over whatever state color is showing,
-   so they're declared after the state-class rules above and rely on source
-   order for that tie-break (same specificity as .fsm-node.is-new rect). */
+/* :hover / :focus feedback on the main rect's stroke must win over the
+   plain and .is-new colors. `.fsm-node:focus rect` / `:hover rect` and
+   `.fsm-node.is-new rect` are all single-class-plus-descendant selectors —
+   (0,2,1) specificity, a true tie — so this relies on source order (these
+   are declared after .is-new) to win the tie-break. There is no longer a
+   three-class rule in this file to out-rank it: selection moved to its own
+   element above, so hover/focus on the rect only ever contends with the
+   base rule and the new-state rule, both of which it beats or ties in its
+   favor by order. */
 .fsm-node:focus rect,
 .fsm-node:hover rect { stroke: var(--pam-orange); }
 

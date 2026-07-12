@@ -135,6 +135,21 @@
         : `${ruleCount} rule${ruleCount > 1 ? 's' : ''}`;
       g.appendChild(el('text', { x: p.x + 14, y: p.y + 46, class: 'fsm-node-sub' }, sub));
 
+      // Selection is drawn as its own inset ring rect, not as a style on the
+      // main rect above — see .fsm-node-selected-ring in index.css. Keeping
+      // it a separate element (rather than an .is-selected rule targeting
+      // `rect`) means it never shares a paint property with the "new"
+      // fill/stroke, so both read at once on a node that is both new and
+      // selected (e.g. Day 1's meal_preparation, Day 4's cleaning_break).
+      if (s.id === selectedState) {
+        const inset = 5;
+        g.appendChild(el('rect', {
+          x: p.x + inset, y: p.y + inset,
+          width: NODE_W - inset * 2, height: NODE_H - inset * 2,
+          rx: 5, class: 'fsm-node-selected-ring',
+        }));
+      }
+
       g.addEventListener('click', () => onSelect(s.id));
       g.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(s.id); }
@@ -270,7 +285,19 @@
 
     function render() {
       const day = data.days[dayIndex];
-      if (!day.states.some((s) => s.id === stateId)) stateId = defaultState(day);
+      // A day with zero states can never satisfy `.some(...)` below no
+      // matter what stateId already holds, so a naive "is stateId still
+      // valid" check would call defaultState(day) again on every render of
+      // an empty day — double-warning for the same day (the warning is
+      // logged once, from inside defaultState, at the call site that
+      // actually resolves it: the initial `let stateId = defaultState(...)`
+      // above, or activate() on a day switch). Treat "already undefined" as
+      // already-resolved for an empty day so this check doesn't re-invoke
+      // defaultState and warn a second time for no new information.
+      const stateIsValid = day.states.length === 0
+        ? stateId === undefined
+        : day.states.some((s) => s.id === stateId);
+      if (!stateIsValid) stateId = defaultState(day);
 
       caption.textContent = day.caption;
       drawGraph(svg, day, stateId, (id) => { stateId = id; render(); });
