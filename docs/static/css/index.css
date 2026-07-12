@@ -358,3 +358,31 @@ body {
 @media (max-width: 1023px) {
   .fsm__panes { grid-template-columns: 1fr; }
 }
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.compare-cell__label {
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.pam-table th,
+.pam-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.pam-table th:first-child,
+.pam-table td:first-child {
+  text-align: left;
+}
+
+.pam-table__ours { background: var(--pam-orange-soft); }
+
+@media (max-width: 768px) {
+  .compare-grid { grid-template-columns: 1fr; }
+}
