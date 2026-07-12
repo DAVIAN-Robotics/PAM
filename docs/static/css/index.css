@@ -1,0 +1,569 @@
+:root {
+  --pam-orange: #e8710a;
+  --pam-orange-soft: #fff1e2;
+  /* Memory Evolution's "new/changed" accent (Change 1): blue, to match both
+     the FSM-memory series color in the paper's results figures (Fig. 5, 11,
+     21) and the paper's own Fig. 7 — the figure this section replaces, and
+     which is still its fallback image — which already inks newly-added
+     memory content blue (and a routine-change revision red). This page
+     collapses Fig. 7's blue/red add-vs-revise distinction into a single
+     blue for everything the reflector touches (added, changed, or
+     rewritten); see the .fsm-rule.is-revised styling below for where that
+     collapse happens. Scoped to #memory-evolution only — every other
+     --pam-orange use on the page (e.g. .pam-table__ours in the Closed-Loop
+     section) is intentionally left alone. */
+  --pam-blue: #1a73e8;
+  --pam-blue-soft: #e8f0fe;
+  --pam-gray: #5f6368;
+  --pam-border: #dadce0;
+  --pam-bg-alt: #f8f9fa;
+  /* .fsm-rule__action's plain, unrevised text colour (Bulma's default body
+     text). Named as a token — not left as an unset inherited value — for two
+     reasons: it documents that the colour is intentional rather than
+     incidental, and it gives memory-evolution.js's animateRevisedCard a
+     stable value to read for the revised-card ghost's *starting* colour.
+     That JS specifically must NOT read the live .fsm-rule__action element's
+     computed color, because on the Routine Change card that element is
+     revised (blue) — the ghost represents the OLD rule as it stood before
+     today's rewrite, so it must start from this plain colour regardless of
+     what the current action happens to be styled. */
+  --pam-action-plain: #4a4a4a;
+}
+
+body {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.publication-title {
+  font-family: 'Google Sans', sans-serif;
+}
+
+.section-heading {
+  font-family: 'Google Sans', sans-serif;
+  margin-bottom: 1.5rem;
+}
+
+.figure {
+  margin: 0 auto;
+  max-width: 1000px;
+}
+
+.figure img {
+  width: 100%;
+  height: auto;
+}
+
+.figure-caption {
+  color: var(--pam-gray);
+  font-size: 0.95rem;
+  margin-top: 0.75rem;
+  text-align: left;
+}
+
+/* --- hero --- */
+.pam-authors span {
+  margin-right: 0.35rem;
+}
+
+/* Author links stay in the subtitle's own color -- Bulma's default link blue
+   would turn the byline into a row of buttons. The hairline underline is what
+   says "clickable". */
+.pam-authors a {
+  border-bottom: 1px solid var(--pam-border);
+  color: inherit;
+}
+
+.pam-authors a:hover {
+  border-bottom-color: var(--pam-blue);
+  color: var(--pam-blue);
+}
+
+.pam-affiliation {
+  font-size: 1.15rem;
+  margin-top: 0.5rem;
+}
+
+.pam-equal {
+  color: var(--pam-gray);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.pam-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.75rem;
+}
+
+/* --- video slot --- */
+.video-slot {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--pam-bg-alt);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.video-slot video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.video-slot__fallback {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  background: var(--pam-bg-alt);
+  border: 1px dashed var(--pam-border);
+  border-radius: 8px;
+  color: var(--pam-gray);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.video-slot.is-missing video {
+  visibility: hidden;
+}
+
+.video-slot.is-missing .video-slot__fallback {
+  display: flex;
+}
+
+#abstract,
+#tasks,
+#results,
+#generalization {
+  background: var(--pam-bg-alt);
+}
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.task-card__label {
+  margin-top: 0.75rem;
+}
+
+.task-card__caption {
+  color: var(--pam-gray);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1023px) {
+  .task-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .task-grid { grid-template-columns: 1fr; }
+}
+
+/* --- memory evolution --- */
+.fsm-legend-swatch {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 3px;
+  background: var(--pam-blue);
+  vertical-align: -1px;
+}
+
+/* Mirrors .fsm-node.is-changed's treatment (white fill, blue stroke only) so
+   the legend's two swatches read as the same filled/outline distinction as
+   the graph itself: the plain .fsm-legend-swatch above stands for a filled,
+   brand-new node (.fsm-node.is-new); this modifier stands for an existing
+   node whose rules changed (.fsm-node.is-changed), an outline only. */
+.fsm-legend-swatch--outline {
+  background: #fff;
+  border: 2px solid var(--pam-blue);
+}
+
+.fsm__days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.fsm__day {
+  background: #fff;
+  border: 1px solid var(--pam-border);
+  border-radius: 999px;
+  color: var(--pam-gray);
+  cursor: pointer;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 0.95rem;
+  padding: 0.5rem 1.1rem;
+}
+
+.fsm__day:hover {
+  border-color: var(--pam-blue);
+  color: var(--pam-blue);
+}
+
+.fsm__day.is-active {
+  background: #202124;
+  border-color: #202124;
+  color: #fff;
+}
+
+.fsm__caption {
+  color: var(--pam-gray);
+  margin: 1.25rem auto 2rem;
+  max-width: 760px;
+  text-align: center;
+}
+
+.fsm__panes {
+  display: grid;
+  grid-template-columns: 540px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* The graph's viewBox is a single fixed box (memory-evolution.js) sized to
+   fit the complete layout at once, so its aspect ratio is wider/taller than
+   any one day's content. On desktop the 540px column (.fsm__panes above)
+   comfortably fits it. On very narrow screens (<=1023px collapses the panes
+   to one column, but a phone-width column is still much narrower than the
+   graph's natural size), letting the SVG shrink all the way down to that
+   column's width would shrink its text past legible — and that shrink must
+   not be "fixed" by changing the viewBox again (see the regression this
+   replaced, documented in memory-evolution.js), since that reintroduces a
+   scale that changes with content. Instead: never let the SVG render
+   smaller than min-width, and let this element (not the page) scroll
+   horizontally when the column is narrower than that.  min-width is chosen
+   close to the viewBox's own width (530 user units) so the graph is never
+   shrunk far from its natural, designed size. */
+.fsm__graph {
+  /* min-width: 0 overrides the grid item's default auto-min-width (which
+     would otherwise inherit the svg's min-width below and blow out the
+     grid track — and with it the page — instead of scrolling internally). */
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.fsm__graph svg {
+  width: 100%;
+  height: auto;
+  min-width: 480px;
+}
+
+/* The node's main box is its own class, .fsm-node__box, deliberately NOT the
+   bare `rect` type selector. A node's <g> can contain more than one <rect>
+   (the box, plus .fsm-node-selected-ring below when selected), and a
+   descendant type selector like `.fsm-node rect` matches ALL of them — so
+   every rule below that paints "the box" would also repaint the ring, and
+   because `.fsm-node rect` (0,1,1) / `.fsm-node.is-new rect` (0,2,1) both
+   outrank the ring's own class-only selector (0,1,0), the ring would lose
+   its dark stroke and inherit whatever the box rules say instead. That was
+   the actual shipped bug: the ring rendered as the base gray box stroke on
+   a plain node, and as the orange is-new stroke on a new node — never its
+   own dark ring, on any day. Targeting `.fsm-node__box` here scopes every
+   rule strictly to the box element, so the ring (and anything else a future
+   change adds inside the <g>) is never touched by these rules regardless of
+   selector order or specificity. */
+.fsm-node__box {
+  fill: #fff;
+  stroke: var(--pam-border);
+  stroke-width: 1.5;
+  /* Constant, neutral drop-shadow on every node (new/changed/plain alike) so
+     the boxes read as raised, clickable cards at rest, not flat labels —
+     part of making the graph's interactivity discoverable without a mouse
+     sweep. Never toggled by any state (new/changed/selected/focus/hover), so
+     it can't be mistaken for one of those signals or compete with them. */
+  filter: drop-shadow(0 1px 2px rgba(60, 64, 67, 0.22));
+}
+
+/* transform-box/transform-origin only matter while the entrance animation
+   in memory-evolution.js is actively applying a transform (a new node
+   scaling up from its center) — with no transform in play they're inert, so
+   this is safe to set unconditionally rather than only on `.is-new`. */
+.fsm-node { cursor: pointer; transform-box: fill-box; transform-origin: center; }
+
+/* Three signals (new / selected / focused) can land on the same node at
+   once (Day 1's meal_preparation, Day 4's cleaning_break are both new *and*
+   the default-selected node). Each owns a structurally distinct,
+   non-overlapping visual channel so none of them can blot out another:
+     - new      -> the main box's fill + stroke (blue), via .fsm-node__box.
+                   Portable SVG paint properties, no `outline`.
+     - selected -> a second, inset <rect> the JS emits only when the node is
+                   selected (.fsm-node-selected-ring below), styled by its
+                   own class only — never reachable by the box rules above
+                   or below, so it always shows its own dark stroke
+                   regardless of whether the node is also new.
+     - focused  -> `outline` on the <g>, offset *outside* the main box. This
+                   is the one appropriate use of `outline` here — focus rings
+                   are a UA convention and this is the only ring that isn't
+                   also required to survive non-Blink `outline`-on-SVG gaps
+                   because it operates alongside a fully portable
+                   fill/stroke/inset-rect combination for new and selected,
+                   not as their only signal.
+   IMPORTANT — this deliberately does NOT reuse --pam-blue for focus. An
+   earlier round of this exact section colored "new" and "focus" the same
+   blue-family hue at the same width, so focusing a new+selected node moved
+   ~0.19% of pixels — invisible in a screenshot, obvious in computed styles.
+   Focus is kept unmistakable on top of a blue, selected node by stacking
+   THREE differences at once against both other rings, not just color:
+   dashed (vs. the box's solid stroke and the selection ring's solid inset
+   stroke), outside the box at a 4px offset (vs. the selection ring's 5px
+   INSET), and a dark near-black (vs. blue). Net effect: new, selected, and
+   focused each render as their own ring (inner solid dark / box solid blue /
+   outer dashed dark), all visible simultaneously with no cascade or
+   z-fighting between them, and focus alone flips visibly on/off regardless
+   of which other two signals are already on the node. */
+.fsm-node:focus {
+  outline: 4px dashed #202124;
+  outline-offset: 4px;
+}
+
+.fsm-node.is-new .fsm-node__box {
+  fill: var(--pam-blue-soft);
+  stroke: var(--pam-blue);
+  stroke-width: 2;
+}
+
+/* A state whose rules changed today but which is not itself new (e.g. Day
+   2/3/5's meal_preparation) gets the same accent hue as .is-new, so the left
+   graph never sits silently on a day where the reflector only touched
+   rules — but it must read as a strictly weaker event than a brand-new
+   state, never a tie. is-new fills the box (blue-soft) AND thickens the
+   stroke; is-changed leaves the white fill alone and only tints the stroke
+   blue at the base 1.5 width, so a new node reads as "solid card" and a
+   changed one reads as "outlined, otherwise ordinary." is-new / is-changed
+   are mutually exclusive by construction in memory-evolution.js (a state
+   only ever carries one of the two classes), so there is no cascade
+   ordering to reason about between these two rules. */
+.fsm-node.is-changed .fsm-node__box {
+  stroke: var(--pam-blue);
+}
+
+/* Selection ring: a separate inset <rect> (emitted by drawGraph in
+   memory-evolution.js only when the node is selected), styled purely by its
+   own class — no rule anywhere in this file reaches it via `rect` or via
+   .fsm-node__box, so nothing here can override its fill/stroke regardless
+   of specificity or source order. Because it never touches the box's
+   fill/stroke, it can't collide with .is-new above — both read
+   simultaneously on a new+selected node with no tie-break needed. Must
+   stay legible over both the plain white box (Day 5) and the blue
+   is-new box (Day 1, Day 4), hence the dark, heavier stroke. */
+.fsm-node-selected-ring {
+  fill: none;
+  stroke: #202124;
+  stroke-width: 2.5;
+  pointer-events: none;
+}
+
+/* :hover / :focus feedback on the box's stroke must win over the plain and
+   .is-new colors. `.fsm-node:focus .fsm-node__box` / `:hover .fsm-node__box`
+   and `.fsm-node.is-new .fsm-node__box` are all single-class-plus-class
+   descendant selectors — (0,2,1) specificity, a true tie — so this relies
+   on source order (declared after .is-new) to win the tie-break. All three
+   selectors here name .fsm-node__box explicitly, so — unlike the old bare
+   `rect` selectors — none of them can ever match the selection ring. */
+.fsm-node:focus .fsm-node__box,
+.fsm-node:hover .fsm-node__box { stroke: var(--pam-blue); }
+
+.fsm-node-title {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 15px;
+  fill: #202124;
+}
+
+.fsm-node-sub {
+  font-size: 12px;
+  fill: var(--pam-gray);
+}
+
+/* Small resting "this leads somewhere" chevron next to the rule-count
+   subtitle, part of making click-to-view-rules discoverable without
+   hovering. Decorative only (the whole <g> already owns the click/keydown
+   handlers and role="button"), so it never intercepts pointer events itself
+   and never needs its own listener. */
+.fsm-node-chevron {
+  font-size: 13px;
+  fill: var(--pam-gray);
+  pointer-events: none;
+}
+
+.fsm-node:hover .fsm-node-chevron,
+.fsm-node:focus .fsm-node-chevron { fill: var(--pam-blue); }
+
+.fsm__graph-hint {
+  color: var(--pam-gray);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+  text-align: center;
+}
+
+.fsm-edge {
+  stroke: var(--pam-border);
+  stroke-width: 1.5;
+}
+
+.fsm-edge.is-new {
+  stroke: var(--pam-blue);
+  stroke-width: 2;
+}
+
+/* The cleaning_break -> working back-edge: dashed, always, regardless of
+   isNew coloring, so it never reads as identical to the forward edge. */
+.fsm-edge--back {
+  stroke-dasharray: 5 4;
+}
+
+.fsm-arrowhead { fill: var(--pam-gray); }
+.fsm-arrowhead.is-new { fill: var(--pam-blue); }
+
+.fsm-edge-label {
+  font-size: 11px;
+  fill: var(--pam-gray);
+}
+
+.fsm-edge-label.is-new { fill: var(--pam-blue); }
+
+.fsm-rules__head h3 {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 1.25rem;
+}
+
+.fsm-rules__head p {
+  color: var(--pam-gray);
+  margin-bottom: 1.25rem;
+}
+
+.fsm-rules__empty { color: var(--pam-gray); }
+
+.fsm-rule {
+  background: #fff;
+  border: 1px solid var(--pam-border);
+  border-left: 3px solid var(--pam-border);
+  border-radius: 6px;
+  margin-bottom: 0.85rem;
+  padding: 0.85rem 1rem;
+  /* Positioning context for the Routine Change card's revised-rule
+     animation (see animateRevisedCard in memory-evolution.js): it overlays
+     a temporary, absolutely-positioned "ghost" of the old action on top of
+     this card while it descends into the "previously" line. The ghost is
+     removed the moment its animation settles or is cancelled, so this
+     never affects the card's own layout — it only scopes where "absolute"
+     resolves to. */
+  position: relative;
+}
+
+.fsm-rule.is-new,
+.fsm-rule.is-revised {
+  background: var(--pam-blue-soft);
+  border-color: var(--pam-blue);
+  border-left-color: var(--pam-blue);
+}
+
+.fsm-rule__triggers {
+  color: var(--pam-gray);
+  font-size: 0.92rem;
+}
+
+.fsm-rule__trigger.is-new {
+  color: var(--pam-blue);
+  font-weight: 600;
+}
+
+.fsm-rule__or { color: #9aa0a6; }
+
+.fsm-rule__action {
+  color: var(--pam-action-plain);
+  font-weight: 600;
+  margin-top: 0.35rem;
+  /* Scale from the left edge, not the box center, so the revised-rule
+     pop-in (animateRevisedCard) grows from where the text actually starts
+     reading rather than visibly drifting sideways from the row's midpoint. */
+  transform-origin: left center;
+}
+
+/* On the one rewritten rule, the accent belongs to the sentence the reflector
+   just wrote -- not to the one it displaced. */
+.fsm-rule.is-revised .fsm-rule__action {
+  color: var(--pam-blue);
+}
+
+.fsm-rule__was {
+  color: var(--pam-gray);
+  font-size: 0.85rem;
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 1023px) {
+  .fsm__panes { grid-template-columns: 1fr; }
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.compare-cell__label {
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.pam-table th,
+.pam-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.pam-table th:first-child,
+.pam-table td:first-child {
+  text-align: left;
+}
+
+.pam-table__ours { background: var(--pam-orange-soft); }
+
+@media (max-width: 768px) {
+  .compare-grid { grid-template-columns: 1fr; }
+}
+
+/* --- bibtex --- */
+.bibtex__bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.bibtex pre {
+  background: var(--pam-bg-alt);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  overflow-x: auto;
+  padding: 1.25rem;
+}
+
+/* --- heading permalinks --- */
+.heading-anchor {
+  color: var(--pam-border);
+  font-weight: 400;
+  margin-right: 0.4em;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.heading-anchor:hover,
+.heading-anchor:focus {
+  color: var(--pam-gray);
+}
+
+/* A section landed on via its permalink shouldn't sit flush against the
+   viewport edge. */
+section[id] {
+  scroll-margin-top: 1.5rem;
+}
