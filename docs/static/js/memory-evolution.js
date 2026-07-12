@@ -92,6 +92,7 @@
   //      keyframes — so there is nothing for a cancel to get stuck in.
   const DUR = {
     nodeEnter: 240,
+    nodePulse: 480,
     edgeDraw: 260,
     edgeStagger: 80,
     edgeAfterNewNode: 120,
@@ -191,18 +192,41 @@
   }
 
   // A new or-clause on an existing trigger: a brief highlight pulse that
-  // settles into the orange resting state already painted by
-  // .fsm-rule__trigger.is-new. Only the temporary background is animated —
-  // the text's own color/weight are the permanent CSS and never touched
-  // here — so once the pulse finishes (or is cancelled) the span reverts
-  // straight to its normal, final appearance.
+  // settles into the blue resting state already painted by
+  // .fsm-rule__trigger.is-new (--pam-blue = #1a73e8 = rgb(26, 113, 232) —
+  // hardcoded here, same as the CSS token, because Web Animations keyframes
+  // don't resolve custom properties the way declarative CSS does). Only the
+  // temporary background is animated — the text's own color/weight are the
+  // permanent CSS and never touched here — so once the pulse finishes (or is
+  // cancelled) the span reverts straight to its normal, final appearance.
   function animateTriggerPulse(span) {
     trackAnim(span.animate(
       [
-        { backgroundColor: 'rgba(232, 113, 10, 0.35)' },
-        { backgroundColor: 'rgba(232, 113, 10, 0)' },
+        { backgroundColor: 'rgba(26, 115, 232, 0.35)' },
+        { backgroundColor: 'rgba(26, 115, 232, 0)' },
       ],
       { duration: DUR.triggerPulse, easing: 'ease-out' },
+    ));
+  }
+
+  // A state whose *rules* changed today but which is not itself new (e.g.
+  // Day 2/3/5's meal_preparation): a brief swell-and-settle so the left
+  // graph gives the visitor a clue even on days where no state/edge is new.
+  // Deliberately weaker than animateNodeEnter — no opacity change, and the
+  // node never leaves scale 1 by much — so a "changed" node reads as a
+  // lesser event than a "new" one, and the two are never confusable. Like
+  // every other animation in this file, it touches only a temporary WAAPI
+  // effect (never a class or attribute), so it needs no cleanup beyond the
+  // shared cancelActiveAnimations() — cancelling or letting it finish both
+  // revert the node to its plain, unanimated final appearance.
+  function animateNodePulse(g) {
+    trackAnim(g.animate(
+      [
+        { transform: 'scale(1)' },
+        { transform: 'scale(1.06)', offset: 0.5 },
+        { transform: 'scale(1)' },
+      ],
+      { duration: DUR.nodePulse, easing: 'ease-in-out' },
     ));
   }
 
@@ -235,12 +259,38 @@
     ));
   }
 
+  // A state "changed" today if any of its rules is new or revised, or any
+  // trigger inside any of its rules is new — even when the state itself is
+  // not new. Days 2, 3, 5, and Routine Change touch only rules, never add a
+  // state, so without this the left graph would sit perfectly still on
+  // those days while the right pane shows real edits. Drives two things in
+  // drawGraph: a persistent .is-changed class (painted for as long as the
+  // day stays selected, not just during the arrival animation — a visitor
+  // who looks away for a second must still see which state the day
+  // touched) and, only on an animated day-switch render, a one-shot
+  // attention pulse (animateNodePulse). States that are themselves new
+  // (Day 1's four states, Day 4's cleaning_break) are deliberately excluded
+  // by the caller below — a new state already gets the stronger
+  // animateNodeEnter treatment plus its own persistent .is-new styling, and
+  // "new" and "changed" are mutually exclusive by design (see
+  // .fsm-node.is-changed in index.css).
+  function changedStates(day) {
+    const ids = new Set();
+    for (const [stateId, rules] of Object.entries(day.rules)) {
+      const changed = rules.some((r) => r.isNew || r.isRevised
+        || r.triggers.some((t) => t.isNew));
+      if (changed) ids.add(stateId);
+    }
+    return ids;
+  }
+
   function drawGraph(svg, day, selectedState, onSelect, animate) {
     svg.replaceChildren();
     svg.setAttribute('viewBox', VIEWBOX);
     const present = new Set(day.states.map((s) => s.id));
     const animateThisRender = shouldAnimate(animate);
     const nodeIsArriving = animateThisRender && day.states.some((s) => s.isNew);
+    const changed = changedStates(day);
 
     const defs = el('defs');
     svg.appendChild(defs);
@@ -294,8 +344,15 @@
         console.warn(`Memory Evolution: no layout position for state "${s.id}" — skipping.`);
         continue; // symmetric with the EDGE_ROUTES guard above: don't throw, don't blank the graph
       }
+      // A state whose rules changed today (but which isn't itself new) gets
+      // a persistent .is-changed class — the accent must stay painted for
+      // as long as this day is selected, not just flash during the arrival
+      // pulse below. Mutually exclusive with is-new: a new state is always
+      // the stronger signal, so it never also carries is-changed even
+      // though a brand-new state's rules are, definitionally, also "new".
+      const isChangedState = !s.isNew && changed.has(s.id);
       const g = el('g', {
-        class: `fsm-node${s.isNew ? ' is-new' : ''}${s.id === selectedState ? ' is-selected' : ''}`,
+        class: `fsm-node${s.isNew ? ' is-new' : ''}${isChangedState ? ' is-changed' : ''}${s.id === selectedState ? ' is-selected' : ''}`,
         tabindex: '0',
         role: 'button',
         'aria-label': `${s.id}: ${s.desc}`,
@@ -310,6 +367,13 @@
         ? 'no rules'
         : `${ruleCount} rule${ruleCount > 1 ? 's' : ''}`;
       g.appendChild(el('text', { x: p.x + 14, y: p.y + 46, class: 'fsm-node-sub' }, sub));
+      // Decorative "leads somewhere" chevron — part of making the node's
+      // clickability discoverable at rest, not just on hover. Purely visual
+      // (pointer-events: none in CSS); the <g> above already owns the real
+      // click/keydown handlers, so this never needs one of its own.
+      g.appendChild(el('text', {
+        x: p.x + NODE_W - 14, y: p.y + 46, class: 'fsm-node-chevron', 'text-anchor': 'end',
+      }, '›'));
 
       // Selection is drawn as its own inset ring rect, not as a style on the
       // main rect above — see .fsm-node-selected-ring in index.css. The main
@@ -337,7 +401,11 @@
       });
       svg.appendChild(g);
 
-      if (animateThisRender && s.isNew) animateNodeEnter(g);
+      if (animateThisRender && s.isNew) {
+        animateNodeEnter(g);
+      } else if (animateThisRender && isChangedState) {
+        animateNodePulse(g);
+      }
     }
   }
 
@@ -486,11 +554,18 @@
     let dayIndex = 0;
     let stateId = defaultState(data.days[0]);
 
-    // animate=true only when this render is the direct result of a day
-    // switch (activate()). A state selection (clicking a node) always
-    // renders with animate=false, so re-picking a node never replays that
-    // day's arrival animation — it's a selection change, not a day change.
-    function render(animate) {
+    // The two panes animate independently: animateGraph is true only when
+    // this render is the direct result of a day switch (activate()) — a
+    // node click always renders with animateGraph=false, so clicking a node
+    // never replays that day's arrival animation on the left (edges
+    // redrawing, nodes re-pulsing/re-entering). animateRules, by contrast,
+    // is true both on a day switch AND on a node click: the visitor clicked
+    // a state specifically to see what changed there, so the right pane's
+    // arrival animation (new cards rising, new/revised triggers, the
+    // revised-rule rewrite) replays every time the selected state changes,
+    // not just on a day switch. Both still collapse to "no animation" under
+    // prefers-reduced-motion via shouldAnimate() inside drawGraph/drawRules.
+    function render(animateGraph, animateRules) {
       cancelActiveAnimations();
 
       const day = data.days[dayIndex];
@@ -509,8 +584,8 @@
       if (!stateIsValid) stateId = defaultState(day);
 
       caption.textContent = day.caption;
-      drawGraph(svg, day, stateId, (id) => { stateId = id; render(false); }, animate);
-      drawRules(rules, day, stateId, animate);
+      drawGraph(svg, day, stateId, (id) => { stateId = id; render(false, true); }, animateGraph);
+      drawRules(rules, day, stateId, animateRules);
 
       [...tabs.children].forEach((btn, i) => {
         const active = i === dayIndex;
@@ -528,7 +603,7 @@
     function activate(index) {
       dayIndex = index;
       stateId = defaultState(data.days[index]);
-      render(true);
+      render(true, true);
     }
 
     data.days.forEach((day, i) => {
@@ -557,7 +632,7 @@
 
     fallback.hidden = true;
     root.hidden = false;
-    render(false);
+    render(false, false);
   }
 
   document.addEventListener('DOMContentLoaded', setupMemoryEvolution);
