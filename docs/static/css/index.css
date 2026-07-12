@@ -426,6 +426,14 @@ body {
   border-radius: 6px;
   margin-bottom: 0.85rem;
   padding: 0.85rem 1rem;
+  /* Positioning context for the Routine Change card's revised-rule
+     animation (see animateRevisedCard in memory-evolution.js): it overlays
+     a temporary, absolutely-positioned "ghost" of the old action on top of
+     this card while it descends into the "previously" line. The ghost is
+     removed the moment its animation settles or is cancelled, so this
+     never affects the card's own layout — it only scopes where "absolute"
+     resolves to. */
+  position: relative;
 }
 
 .fsm-rule.is-new,
@@ -450,6 +458,10 @@ body {
 .fsm-rule__action {
   font-weight: 600;
   margin-top: 0.35rem;
+  /* Scale from the left edge, not the box center, so the revised-rule
+     pop-in (animateRevisedCard) grows from where the text actually starts
+     reading rather than visibly drifting sideways from the row's midpoint. */
+  transform-origin: left center;
 }
 
 .fsm-rule__was {

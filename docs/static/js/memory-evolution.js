@@ -239,9 +239,23 @@
     cardRise: 220,
     cardStagger: 90,
     triggerPulse: 420,
-    revisedWas: 340,
-    revisedAction: 260,
-    revisedActionDelay: 160,
+    // The Routine Change rewrite (see animateRevisedCard below): a ghost
+    // plays the old sentence descending out of the action slot into the
+    // "previously" line while its style fades and the "revised —
+    // previously:" prefix reveals itself, then the real new action pops
+    // into the vacated slot. Numbers are tuned so the whole sequence lands
+    // well under the section's ~600ms budget: prefix reveal ends exactly
+    // as the descent (revisedGhostDur) completes, the real "was" line
+    // fades in right after, and the new action's pop-in starts just before
+    // the descent finishes so the two beats overlap slightly rather than
+    // reading as two separate events.
+    revisedGhostDur: 300,
+    revisedPrefixDur: 150,
+    revisedPrefixDelay: 150,
+    revisedWasDur: 140,
+    revisedWasDelay: 210,
+    revisedActionDur: 260,
+    revisedActionDelay: 260,
   };
 
   const reduceMotionQuery = typeof matchMedia === 'function'
@@ -425,28 +439,135 @@
     ));
   }
 
-  // The revised rule (Routine Change only): the old action visibly gives way
-  // to the new one. wasEl briefly reads like the old primary action — struck
-  // through, slightly enlarged — then settles into its normal small
-  // "revised — previously: …" caption size exactly as it always renders.
-  // actionEl fades/slides into the primary slot a beat later, so the new
-  // action visibly *replaces* the old rather than the two just co-appearing.
-  function animateRevisedCard(actionEl, wasEl) {
-    trackAnim(wasEl.animate(
+  // The revised rule (Routine Change only): make the rewrite physical
+  // rather than a card just appearing. Three beats, read as one motion:
+  //
+  //   1. The card opens showing the OLD rule as if it were still in force —
+  //      the old sentence sitting in the action slot, dark/full-weight, no
+  //      prefix. That's `ghost`'s starting look: it is built with `act`'s
+  //      own class (`fsm-rule__action`) so it inherits the exact same CSS,
+  //      no hand-copied styling to drift out of sync.
+  //   2. The old sentence is demoted: `ghost` physically translates down
+  //      into `was`'s slot while its color/size/weight fade from the
+  //      action style to `was`'s style, and a "revised — previously: "
+  //      prefix span reveals itself (width + opacity, from 0) in front of
+  //      the sentence text as it lands.
+  //   3. The real `act` (new action, already the final blue/revised
+  //      styling — untouched by any of this) pops into the now-vacated
+  //      action slot with a scale overshoot.
+  //
+  // `ghost` and its prefix span are the ONLY elements this function ever
+  // creates or mutates the geometry/text of — `act` and `was` are the real,
+  // already-final DOM nodes drawRules built; only their *opacity* is
+  // animated (fill: 'backwards'), so cancelling mid-flight (or just letting
+  // the animation finish) always reverts them to their plain, correct,
+  // final CSS with nothing to clean up. `ghost` itself is genuinely
+  // temporary: appended here, removed the instant its own animations
+  // settle or are cancelled, so the settled DOM is exactly what drawRules
+  // built — this function never leaves a trace once it's done.
+  function animateRevisedCard(card, act, was, wasActionText) {
+    // Capture real geometry/computed style *before* anything is animated —
+    // once act/was's own .animate() calls are made, getComputedStyle would
+    // start reflecting their in-flight WAAPI effect instead of their true
+    // resting values.
+    const cardRect = card.getBoundingClientRect();
+    const actRect = act.getBoundingClientRect();
+    const wasRect = was.getBoundingClientRect();
+    const actStyle = getComputedStyle(act);
+    const wasStyle = getComputedStyle(was);
+    const startColor = actStyle.color;
+    const startSize = actStyle.fontSize;
+    const startWeight = actStyle.fontWeight;
+    const endColor = wasStyle.color;
+    const endSize = wasStyle.fontSize;
+    const endWeight = wasStyle.fontWeight;
+    const dy = wasRect.top - actRect.top;
+
+    const ghost = document.createElement('p');
+    ghost.className = 'fsm-rule__action';
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.style.position = 'absolute';
+    ghost.style.margin = '0';
+    ghost.style.left = `${actRect.left - cardRect.left}px`;
+    ghost.style.top = `${actRect.top - cardRect.top}px`;
+    ghost.style.width = `${actRect.width}px`;
+    ghost.style.pointerEvents = 'none';
+    ghost.style.color = startColor;
+
+    // The prefix is styled in `was`'s (fixed, final) style from the start —
+    // only its width/opacity animate — so its target width is stable to
+    // measure once, rather than a moving target chasing the ghost's own
+    // color/size/weight transition.
+    const prefix = document.createElement('span');
+    prefix.textContent = 'revised — previously: ';
+    prefix.style.display = 'inline-block';
+    prefix.style.overflow = 'hidden';
+    prefix.style.whiteSpace = 'nowrap';
+    prefix.style.verticalAlign = 'baseline';
+    prefix.style.color = endColor;
+    prefix.style.fontSize = endSize;
+    prefix.style.fontWeight = endWeight;
+    ghost.appendChild(prefix);
+    ghost.appendChild(document.createTextNode(wasActionText));
+    card.appendChild(ghost);
+
+    const prefixWidth = prefix.getBoundingClientRect().width;
+
+    const ghostAnim = ghost.animate(
       [
-        { textDecorationLine: 'line-through', transform: 'scale(1.05)' },
-        { textDecorationLine: 'line-through', transform: 'scale(1.05)', offset: 0.55 },
-        { textDecorationLine: 'none', transform: 'scale(1)' },
+        { transform: 'translateY(0)', color: startColor, fontSize: startSize, fontWeight: startWeight },
+        { transform: `translateY(${dy}px)`, color: endColor, fontSize: endSize, fontWeight: endWeight },
       ],
-      { duration: DUR.revisedWas, easing: 'ease-out' },
-    ));
-    trackAnim(actionEl.animate(
+      { duration: DUR.revisedGhostDur, easing: 'ease-in', fill: 'both' },
+    );
+    const prefixAnim = prefix.animate(
       [
-        { opacity: 0, transform: 'translateY(6px)' },
-        { opacity: 1, transform: 'translateY(0)' },
+        { width: '0px', opacity: 0 },
+        { width: `${prefixWidth}px`, opacity: 1 },
       ],
       {
-        duration: DUR.revisedAction,
+        duration: DUR.revisedPrefixDur,
+        delay: DUR.revisedPrefixDelay,
+        easing: 'ease-out',
+        fill: 'both',
+      },
+    );
+
+    // Belt-and-suspenders cleanup, same spirit as cancelActiveAnimations()
+    // elsewhere in this file: remove `ghost` (and explicitly cancel its two
+    // animations) the moment they settle *or* the moment a new render
+    // cancels this one — whichever comes first — so a ghost never outlives
+    // its own animation, whether that animation ran to completion or was
+    // cut short by rapid tab/node switching.
+    let ghostRemoved = false;
+    const removeGhost = () => {
+      if (ghostRemoved) return;
+      ghostRemoved = true;
+      try { ghostAnim.cancel(); } catch (_) { /* already finished/idle */ }
+      try { prefixAnim.cancel(); } catch (_) { /* already finished/idle */ }
+      if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+    };
+    Promise.all([ghostAnim.finished, prefixAnim.finished]).catch(() => {}).then(removeGhost);
+    trackAnim({ cancel: removeGhost });
+
+    trackAnim(was.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      {
+        duration: DUR.revisedWasDur,
+        delay: DUR.revisedWasDelay,
+        easing: 'ease-out',
+        fill: 'backwards',
+      },
+    ));
+
+    trackAnim(act.animate(
+      [
+        { opacity: 0, transform: 'scale(0.85)' },
+        { opacity: 1, transform: 'scale(1.06)', offset: 0.7 },
+        { opacity: 1, transform: 'scale(1)' },
+      ],
+      {
+        duration: DUR.revisedActionDur,
         delay: DUR.revisedActionDelay,
         easing: 'ease-out',
         fill: 'backwards',
@@ -704,7 +825,7 @@
       if (animateThisRender) {
         if (rule.isRevised && was) {
           // The strongest moment on the page: the rewrite, not an append.
-          animateRevisedCard(act, was);
+          animateRevisedCard(card, act, was, rule.wasAction);
         } else if (rule.isNew) {
           animateCardEnter(card, newCardIndex * DUR.cardStagger);
           newCardIndex += 1;
@@ -718,31 +839,22 @@
     }
   }
 
-  // The state a day is "about": the one the reflector touched. Prefer a
-  // revised rule, then a new state, then a new rule, then a rule with at
-  // least one new trigger clause; fall back to the first state.
-  //
-  // Day 5 has no revised rule, no new state, and no rule-level isNew flag —
-  // it only carries new *trigger clauses* inside otherwise-existing rules.
-  // Without the fourth pass below, Day 5 falls all the way through to
-  // day.states[0].id, which happens to be meal_preparation — which happens
-  // to also be the state with new trigger clauses. That's correct by
-  // coincidence, not by design (eating and cleaning_break have new trigger
-  // clauses too; meal_preparation only wins because it's first). The pass
-  // below makes the same result explicit and correct, and does not change
-  // the answer on any of the other five days, which all resolve earlier.
+  // The state selected when a day loads: always meal_preparation, on every
+  // one of the six days. The left graph now carries "what changed today" in
+  // its own color channel (a new state gets a filled/blue node, a state
+  // whose rules merely changed gets a blue outline via is-changed), so
+  // selection no longer needs to double as that signal — it used to jump to
+  // whichever state the reflector actually touched (a revised rule, else a
+  // new state, else a new rule, else a broadened trigger), which meant the
+  // right pane could land on a different state every day and nothing was
+  // directly comparable day over day. Pinning it to meal_preparation instead
+  // gives the visitor a fixed reference point across the whole sequence.
+  // meal_preparation exists on all six days in the real data, so the
+  // fallback below is defensive only, not a real case: if it's ever absent,
+  // fall back to the day's first state (or undefined for a genuinely empty
+  // day, which render() already handles).
   function defaultState(day) {
-    for (const [stateId, rules] of Object.entries(day.rules)) {
-      if (rules.some((r) => r.isRevised)) return stateId;
-    }
-    const newState = day.states.find((s) => s.isNew);
-    if (newState) return newState.id;
-    for (const [stateId, rules] of Object.entries(day.rules)) {
-      if (rules.some((r) => r.isNew)) return stateId;
-    }
-    for (const [stateId, rules] of Object.entries(day.rules)) {
-      if (rules.some((r) => r.triggers.some((t) => t.isNew))) return stateId;
-    }
+    if (day.states.some((s) => s.id === 'meal_preparation')) return 'meal_preparation';
     if (!day.states.length) {
       console.warn(`Memory Evolution: day "${day.id}" has no states.`);
       return undefined;
