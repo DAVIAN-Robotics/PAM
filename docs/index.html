@@ -375,7 +375,48 @@
   </section>
 
   <!-- Task 9 -->
-  <section class="section" id="generalization"></section>
+  <section class="section" id="generalization">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 section-heading has-text-centered">Does It Only Work on One Routine?</h2>
+
+      <h3 class="title is-5" style="margin-top: 1rem;">A harder routine, with almost no cues</h3>
+      <div class="figure">
+        <img src="static/images/fig20_medication.png"
+             alt="The medication routine: the person enters empty-handed, takes a pill with water, then drinks a Coke while working.">
+      </div>
+      <div class="content is-medium" style="margin-top: 1.25rem;">
+        <p>
+          In the desk routine, an empty bowl is a strong hint. So we built a routine that offers
+          almost none: the user walks in empty-handed, takes a pill with water, then drinks a Coke
+          while working. Nothing on the desk says what comes next &mdash; which is precisely the
+          knowledge a memory is supposed to supply.
+        </p>
+      </div>
+      <div class="figure" style="margin-top: 1.5rem;">
+        <img src="static/images/fig21_medication_results.png"
+             alt="Five-day results on the medication routine.">
+        <p class="figure-caption">
+          The FSM memory still improves day over day and still leads on precision, recall, and F1,
+          cutting first-fire delay from roughly 17 seconds to about 10. The event-driven baseline,
+          with no memory and nothing in the scene to react to, never fires at all.
+        </p>
+      </div>
+
+      <h3 class="title is-5" style="margin-top: 3rem;">What if the user's routine changes entirely?</h3>
+      <div class="figure">
+        <img src="static/images/fig22_transfer.png"
+             alt="Adapting a memory built on one routine to a different one, in both directions.">
+        <p class="figure-caption">
+          Loading a memory built for a different routine and freezing it is worse than having no
+          memory at all &mdash; the old routine's vocabulary fires false positives on the new
+          content. But leave the reflector running and the problem evaporates: it starts a step
+          behind on Day 1, but by Day 3 it has replaced the stale pairs and caught up with a memory
+          started from scratch. A deployed robot does not need its memory wiped when the user's
+          life changes.
+        </p>
+      </div>
+    </div>
+  </section>
 
   <!-- Task 10 -->
   <section class="section" id="bibtex"></section>
