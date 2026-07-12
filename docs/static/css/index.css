@@ -470,3 +470,23 @@ body {
   overflow-x: auto;
   padding: 1.25rem;
 }
+
+/* --- heading permalinks --- */
+.heading-anchor {
+  color: var(--pam-border);
+  font-weight: 400;
+  margin-left: 0.4em;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.heading-anchor:hover,
+.heading-anchor:focus {
+  color: var(--pam-gray);
+}
+
+/* A section landed on via its permalink shouldn't sit flush against the
+   viewport edge. */
+section[id] {
+  scroll-margin-top: 1.5rem;
+}

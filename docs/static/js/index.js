@@ -24,7 +24,32 @@ function setupBibtexCopy() {
   });
 }
 
+// Give every section heading a "#" permalink. Subheadings have no id of their
+// own, so slugify their text to make one.
+function setupHeadingAnchors() {
+  const slug = (text) => text.toLowerCase().trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-');
+
+  document.querySelectorAll('section[id]').forEach((section) => {
+    section.querySelectorAll('h2, h3').forEach((heading, i) => {
+      const id = i === 0 && heading.tagName === 'H2'
+        ? section.id
+        : `${section.id}-${slug(heading.textContent)}`;
+      if (heading !== section.querySelector('h2')) heading.id = id;
+
+      const anchor = document.createElement('a');
+      anchor.className = 'heading-anchor';
+      anchor.href = `#${id}`;
+      anchor.textContent = '#';
+      anchor.setAttribute('aria-label', `Permalink to "${heading.textContent.trim()}"`);
+      heading.appendChild(anchor);
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   setupVideoSlots();
   setupBibtexCopy();
+  setupHeadingAnchors();
 });
