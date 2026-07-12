@@ -43,7 +43,7 @@ function setupHeadingAnchors() {
       anchor.href = `#${id}`;
       anchor.textContent = '#';
       anchor.setAttribute('aria-label', `Permalink to "${heading.textContent.trim()}"`);
-      heading.appendChild(anchor);
+      heading.prepend(anchor);
     });
   });
 }

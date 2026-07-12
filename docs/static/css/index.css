@@ -475,7 +475,7 @@ body {
 .heading-anchor {
   color: var(--pam-border);
   font-weight: 400;
-  margin-left: 0.4em;
+  margin-right: 0.4em;
   text-decoration: none;
   transition: color 0.15s ease;
 }
