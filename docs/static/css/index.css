@@ -212,6 +212,12 @@ body {
   fill: #fff;
   stroke: var(--pam-border);
   stroke-width: 1.5;
+  /* Constant, neutral drop-shadow on every node (new/changed/plain alike) so
+     the boxes read as raised, clickable cards at rest, not flat labels —
+     part of making the graph's interactivity discoverable without a mouse
+     sweep. Never toggled by any state (new/changed/selected/focus/hover), so
+     it can't be mistaken for one of those signals or compete with them. */
+  filter: drop-shadow(0 1px 2px rgba(60, 64, 67, 0.22));
 }
 
 /* transform-box/transform-origin only matter while the entrance animation
@@ -262,6 +268,21 @@ body {
   stroke-width: 2;
 }
 
+/* A state whose rules changed today but which is not itself new (e.g. Day
+   2/3/5's meal_preparation) gets the same accent hue as .is-new, so the left
+   graph never sits silently on a day where the reflector only touched
+   rules — but it must read as a strictly weaker event than a brand-new
+   state, never a tie. is-new fills the box (blue-soft) AND thickens the
+   stroke; is-changed leaves the white fill alone and only tints the stroke
+   blue at the base 1.5 width, so a new node reads as "solid card" and a
+   changed one reads as "outlined, otherwise ordinary." is-new / is-changed
+   are mutually exclusive by construction in memory-evolution.js (a state
+   only ever carries one of the two classes), so there is no cascade
+   ordering to reason about between these two rules. */
+.fsm-node.is-changed .fsm-node__box {
+  stroke: var(--pam-blue);
+}
+
 /* Selection ring: a separate inset <rect> (emitted by drawGraph in
    memory-evolution.js only when the node is selected), styled purely by its
    own class — no rule anywhere in this file reaches it via `rect` or via
@@ -297,6 +318,27 @@ body {
 .fsm-node-sub {
   font-size: 12px;
   fill: var(--pam-gray);
+}
+
+/* Small resting "this leads somewhere" chevron next to the rule-count
+   subtitle, part of making click-to-view-rules discoverable without
+   hovering. Decorative only (the whole <g> already owns the click/keydown
+   handlers and role="button"), so it never intercepts pointer events itself
+   and never needs its own listener. */
+.fsm-node-chevron {
+  font-size: 13px;
+  fill: var(--pam-gray);
+  pointer-events: none;
+}
+
+.fsm-node:hover .fsm-node-chevron,
+.fsm-node:focus .fsm-node-chevron { fill: var(--pam-blue); }
+
+.fsm__graph-hint {
+  color: var(--pam-gray);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+  text-align: center;
 }
 
 .fsm-edge {
@@ -409,8 +451,16 @@ body {
 }
 
 /* --- bibtex --- */
-.bibtex {
-  position: relative;
+.bibtex__note {
+  color: var(--pam-gray);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.bibtex__bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
 }
 
 .bibtex pre {
@@ -418,22 +468,5 @@ body {
   border-radius: 6px;
   font-size: 0.85rem;
   overflow-x: auto;
-  /* Extra top padding clears the absolutely-positioned .bibtex__copy button
-     (top: 0.75rem, ~2rem tall) so it never sits on top of the first line of
-     BibTeX text -- most visible at narrow widths where the first line is
-     long relative to the container. */
-  padding: 3rem 1.25rem 1.25rem;
-}
-
-.bibtex__copy {
-  position: absolute;
-  right: 0.75rem;
-  top: 0.75rem;
-}
-
-/* --- bibtex --- */
-.bibtex__note {
-  color: var(--pam-gray);
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
+  padding: 1.25rem;
 }

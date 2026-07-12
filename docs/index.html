@@ -254,6 +254,7 @@
 
         <div class="fsm__panes" id="fsm-panel" role="tabpanel" tabindex="0">
           <div class="fsm__graph">
+            <p class="fsm__graph-hint">Click a state below to see the assistance rules attached to it.</p>
             <svg id="fsm-svg" viewBox="0 0 540 560" role="group" aria-label="Finite-state machine of the user's routine"></svg>
           </div>
           <div class="fsm__rules" id="fsm-rules"></div>
@@ -437,10 +438,12 @@
         arXiv citation.
       </p>
       <div class="bibtex">
-        <button class="button is-small is-rounded bibtex__copy" id="bibtex-copy" type="button">
-          <span class="icon"><i class="fas fa-copy"></i></span>
-          <span>Copy</span>
-        </button>
+        <div class="bibtex__bar">
+          <button class="button is-small is-rounded" id="bibtex-copy" type="button">
+            <span class="icon"><i class="fas fa-copy"></i></span>
+            <span>Copy</span>
+          </button>
+        </div>
         <pre id="bibtex-text">@misc{lee2026pam,
   title        = {Procedural Assistance Memory for Proactive Robot},
   author       = {Lee, Dohyun and Park, Minho and Park, Jeonghoon and Hwang, Dongyoon
