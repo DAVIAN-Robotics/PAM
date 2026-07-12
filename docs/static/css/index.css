@@ -187,7 +187,21 @@ body {
   height: auto;
 }
 
-.fsm-node rect {
+/* The node's main box is its own class, .fsm-node__box, deliberately NOT the
+   bare `rect` type selector. A node's <g> can contain more than one <rect>
+   (the box, plus .fsm-node-selected-ring below when selected), and a
+   descendant type selector like `.fsm-node rect` matches ALL of them — so
+   every rule below that paints "the box" would also repaint the ring, and
+   because `.fsm-node rect` (0,1,1) / `.fsm-node.is-new rect` (0,2,1) both
+   outrank the ring's own class-only selector (0,1,0), the ring would lose
+   its dark stroke and inherit whatever the box rules say instead. That was
+   the actual shipped bug: the ring rendered as the base gray box stroke on
+   a plain node, and as the orange is-new stroke on a new node — never its
+   own dark ring, on any day. Targeting `.fsm-node__box` here scopes every
+   rule strictly to the box element, so the ring (and anything else a future
+   change adds inside the <g>) is never touched by these rules regardless of
+   selector order or specificity. */
+.fsm-node__box {
   fill: #fff;
   stroke: var(--pam-border);
   stroke-width: 1.5;
@@ -195,24 +209,24 @@ body {
 
 .fsm-node { cursor: pointer; }
 
-/* Three states (new / selected / focused) can land on the same node at
+/* Three signals (new / selected / focused) can land on the same node at
    once (Day 1's meal_preparation, Day 4's cleaning_break are both new *and*
-   the default-selected node). Rather than layer competing rules on the same
-   rect — which is how the old outline-on-outline collision happened — each
-   state now owns a structurally distinct, non-overlapping visual channel:
-     - new      -> the main <rect>'s fill + stroke (orange). Portable SVG
-                   paint properties, no `outline`.
+   the default-selected node). Each owns a structurally distinct,
+   non-overlapping visual channel so none of them can blot out another:
+     - new      -> the main box's fill + stroke (orange), via .fsm-node__box.
+                   Portable SVG paint properties, no `outline`.
      - selected -> a second, inset <rect> the JS emits only when the node is
-                   selected (.fsm-node-selected-ring below). It sits well
-                   inside the main rect's border, so it never competes with
-                   the "new" fill/stroke for the same pixels.
-     - focused  -> `outline` on the <g>, offset *outside* the main rect. This
+                   selected (.fsm-node-selected-ring below), styled by its
+                   own class only — never reachable by the box rules above
+                   or below, so it always shows its own dark stroke
+                   regardless of whether the node is also new.
+     - focused  -> `outline` on the <g>, offset *outside* the main box. This
                    is the one appropriate use of `outline` here — focus rings
                    are a UA convention and this is the only ring that isn't
                    also required to survive non-Blink `outline`-on-SVG gaps
-                   (§ finding 2) because it operates alongside a fully
-                   portable fill/stroke/inset-rect combination for new and
-                   selected, not as their only signal.
+                   because it operates alongside a fully portable
+                   fill/stroke/inset-rect combination for new and selected,
+                   not as their only signal.
    Net effect: new, selected, and focused each render as their own ring
    (inner / border / outer), all visible simultaneously with no cascade or
    z-fighting between them. */
@@ -221,17 +235,21 @@ body {
   outline-offset: 3px;
 }
 
-.fsm-node.is-new rect {
+.fsm-node.is-new .fsm-node__box {
   fill: var(--pam-orange-soft);
   stroke: var(--pam-orange);
   stroke-width: 2;
 }
 
 /* Selection ring: a separate inset <rect> (emitted by drawGraph in
-   memory-evolution.js only when the node is selected), not a style on the
-   main rect. Because it never touches the main rect's fill/stroke, it can't
-   collide with .is-new above — both read simultaneously on a new+selected
-   node without any specificity tie-break needed. */
+   memory-evolution.js only when the node is selected), styled purely by its
+   own class — no rule anywhere in this file reaches it via `rect` or via
+   .fsm-node__box, so nothing here can override its fill/stroke regardless
+   of specificity or source order. Because it never touches the box's
+   fill/stroke, it can't collide with .is-new above — both read
+   simultaneously on a new+selected node with no tie-break needed. Must
+   stay legible over both the plain white box (Day 5) and the orange
+   is-new box (Day 1, Day 4), hence the dark, heavier stroke. */
 .fsm-node-selected-ring {
   fill: none;
   stroke: #202124;
@@ -239,17 +257,15 @@ body {
   pointer-events: none;
 }
 
-/* :hover / :focus feedback on the main rect's stroke must win over the
-   plain and .is-new colors. `.fsm-node:focus rect` / `:hover rect` and
-   `.fsm-node.is-new rect` are all single-class-plus-descendant selectors —
-   (0,2,1) specificity, a true tie — so this relies on source order (these
-   are declared after .is-new) to win the tie-break. There is no longer a
-   three-class rule in this file to out-rank it: selection moved to its own
-   element above, so hover/focus on the rect only ever contends with the
-   base rule and the new-state rule, both of which it beats or ties in its
-   favor by order. */
-.fsm-node:focus rect,
-.fsm-node:hover rect { stroke: var(--pam-orange); }
+/* :hover / :focus feedback on the box's stroke must win over the plain and
+   .is-new colors. `.fsm-node:focus .fsm-node__box` / `:hover .fsm-node__box`
+   and `.fsm-node.is-new .fsm-node__box` are all single-class-plus-class
+   descendant selectors — (0,2,1) specificity, a true tie — so this relies
+   on source order (declared after .is-new) to win the tie-break. All three
+   selectors here name .fsm-node__box explicitly, so — unlike the old bare
+   `rect` selectors — none of them can ever match the selection ring. */
+.fsm-node:focus .fsm-node__box,
+.fsm-node:hover .fsm-node__box { stroke: var(--pam-orange); }
 
 .fsm-node-title {
   font-family: 'Google Sans', sans-serif;

@@ -126,7 +126,9 @@
         role: 'button',
         'aria-label': `${s.id}: ${s.desc}`,
       });
-      g.appendChild(el('rect', { x: p.x, y: p.y, width: NODE_W, height: NODE_H, rx: 8 }));
+      g.appendChild(el('rect', {
+        x: p.x, y: p.y, width: NODE_W, height: NODE_H, rx: 8, class: 'fsm-node__box',
+      }));
       g.appendChild(el('text', { x: p.x + 14, y: p.y + 26, class: 'fsm-node-title' }, s.id));
 
       const ruleCount = (day.rules[s.id] || []).length;
@@ -136,11 +138,16 @@
       g.appendChild(el('text', { x: p.x + 14, y: p.y + 46, class: 'fsm-node-sub' }, sub));
 
       // Selection is drawn as its own inset ring rect, not as a style on the
-      // main rect above — see .fsm-node-selected-ring in index.css. Keeping
-      // it a separate element (rather than an .is-selected rule targeting
-      // `rect`) means it never shares a paint property with the "new"
-      // fill/stroke, so both read at once on a node that is both new and
-      // selected (e.g. Day 1's meal_preparation, Day 4's cleaning_break).
+      // main rect above — see .fsm-node-selected-ring in index.css. The main
+      // rect carries its own class (.fsm-node__box) precisely so the base /
+      // is-new / hover / focus rules in CSS can target *that* box only —
+      // "any rect inside a node" would otherwise also match this ring and
+      // repaint it every time a node is new/hovered/focused (see the CSS
+      // comment above .fsm-node__box for how that bit previously). Keeping
+      // the ring a separate element with its own class means it never
+      // shares a paint property with the "new" fill/stroke, so both read at
+      // once on a node that is both new and selected (e.g. Day 1's
+      // meal_preparation, Day 4's cleaning_break).
       if (s.id === selectedState) {
         const inset = 5;
         g.appendChild(el('rect', {
