@@ -249,7 +249,7 @@
            ],
            "action": "Pick up the pill and place it next to the person.", "isNew": false, "isRevised": true,
            "wasAction": "Pick up the cereal bag and place it next to the person."},
-          {"triggers": [{"text": "Person picks up the pill", "isNew": true}],
+          {"triggers": [{"text": "Person picks pill", "isNew": true}],
            "action": "Pick up the cereal bag and place it next to the person.", "isNew": true},
           {"triggers": [
              {"text": "Person pours cereal into the bowl", "isNew": false},
