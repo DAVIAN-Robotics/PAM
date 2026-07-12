@@ -475,7 +475,11 @@
     const wasRect = was.getBoundingClientRect();
     const actStyle = getComputedStyle(act);
     const wasStyle = getComputedStyle(was);
-    const startColor = actStyle.color;
+    // The ghost is the OLD rule as it stood before tonight's rewrite, when it
+    // was an ordinary rule in plain text. Read the plain colour from the token
+    // rather than from `act`, whose colour is now the blue of its replacement.
+    const startColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--pam-action-plain').trim() || actStyle.color;
     const startSize = actStyle.fontSize;
     const startWeight = actStyle.fontWeight;
     const endColor = wasStyle.color;
