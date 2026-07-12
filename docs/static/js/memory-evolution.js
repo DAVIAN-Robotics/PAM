@@ -24,32 +24,44 @@
   };
   const VIEWBOX_PAD = 20;
 
-  // A previous version of this file fit the viewBox to the bounding box of
-  // just the nodes drawn *that day* (viewBoxForDay(day), now removed). Days
-  // 1-3 have no cleaning_break node, so their content bbox was smaller, so
-  // that viewBox was smaller, so the SVG — which scales to its container at
-  // a fixed aspect ratio (width: 100%; height: auto in CSS) — scaled *up* to
-  // fill the column on those days. The graph's scale changed as the visitor
-  // stepped through days: a node that stayed exactly the same size and
-  // position appeared to grow or shrink, and a genuinely new node no longer
-  // read as *appearing* — it read as the whole graph rescaling. That defeats
-  // the section's entire point (watching what the reflector added, day over
-  // day), so scale must be constant across all six days.
+  // Two previous iterations of this got it wrong in opposite directions:
   //
-  // The fix: one viewBox, computed once from the bounding box of the
-  // *complete* fixed layout — every node in POS, every edge route, and every
-  // edge label, whether or not a given day draws it — plus a little padding.
-  // Node positions (POS) and the edge-route table are never touched; only
-  // this fixed window we view them through is computed, and it never
-  // changes per day. On Days 1-3 the region where cleaning_break will later
-  // appear is simply empty — that's correct: the state doesn't exist yet,
-  // and Day 4 should show it arriving into that space, not the graph
-  // zooming to make room for it.
+  //   1. A per-day viewBox fit to the bounding box of just the nodes drawn
+  //      *that day*. Days 1-3 have no cleaning_break node, so their content
+  //      bbox was smaller, so that viewBox was smaller, so the SVG — which
+  //      scales to its container at a fixed aspect ratio (width: 100%;
+  //      height: auto in CSS) — scaled *up* to fill the column on those
+  //      days. A node that stayed exactly the same size and position
+  //      appeared to grow or shrink, and a genuinely new node no longer
+  //      read as *appearing* — it read as the whole graph rescaling.
+  //   2. A single FIXED_VIEWBOX covering the complete fixed layout on every
+  //      day — every node in POS, every edge route, and every edge label,
+  //      whether or not a given day draws it. Scale was constant, but the
+  //      origin was also constant, so Days 1-3 (which draw less than the
+  //      full layout) rendered pushed to one side with dead space beside
+  //      them instead of looking centered.
+  //
+  // The fix: keep the viewBox's *size* constant (FIXED_SIZE below, derived
+  // once from the complete layout — this is what pins the scale) but choose
+  // its *origin* per day (viewBoxForDay) so that day's actually-drawn
+  // content is centered inside that constant-size window. Node positions
+  // (POS) and the edge-route table are never touched, and neither is the
+  // window's size — only where that fixed-size window is *placed* moves,
+  // per day. On Days 1-3 the window is centered over the four-node column;
+  // on Days 4-6, centering the complete layout lands the window exactly
+  // where the old single FIXED_VIEWBOX sat.
   function numbersFromPath(d) {
     return (d.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
   }
 
-  function computeFixedViewBox() {
+  // Bounding box (in the fixed layout's coordinate space) of a set of
+  // states plus a set of edge routes. Shared by the "complete layout" bbox
+  // (-> FIXED_SIZE, computed once below) and the "this day's content" bbox
+  // (-> viewBoxForDay, computed per render) — same math, different input
+  // sets. Returns null if given no states and no edges to consider (an
+  // empty day), so callers can fall back rather than divide by a bbox that
+  // doesn't exist.
+  function computeBBox(stateIds, edgeRoutes) {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     const consider = (x, y) => {
       minX = Math.min(minX, x);
@@ -57,20 +69,19 @@
       maxX = Math.max(maxX, x);
       maxY = Math.max(maxY, y);
     };
-    for (const p of Object.values(POS)) {
+    for (const id of stateIds) {
+      const p = POS[id];
+      if (!p) continue;
       consider(p.x, p.y);
       consider(p.x + NODE_W, p.y + NODE_H);
     }
-    for (const route of Object.values(EDGE_ROUTES)) {
+    for (const route of edgeRoutes) {
       const nums = numbersFromPath(route.d);
       for (let i = 0; i + 1 < nums.length; i += 2) consider(nums[i], nums[i + 1]);
       consider(route.label.x, route.label.y);
     }
-    minX -= VIEWBOX_PAD;
-    minY -= VIEWBOX_PAD;
-    maxX += VIEWBOX_PAD;
-    maxY += VIEWBOX_PAD;
-    return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
+    if (minX === Infinity) return null;
+    return { minX, minY, maxX, maxY };
   }
 
   // Every edge that can ever appear (5 total, across all six days) gets an
@@ -122,10 +133,81 @@
   };
 
   // Computed once, here, after POS and EDGE_ROUTES are both defined — not
-  // per render, not per day. Every drawGraph() call below sets the SVG's
-  // viewBox to this same string, so a node's rendered size and position
-  // never changes as the visitor steps through days.
-  const FIXED_VIEWBOX = computeFixedViewBox();
+  // per render, not per day. FIXED_SIZE.width/height is the same for every
+  // drawGraph() call below, so a node's rendered *size* never changes as
+  // the visitor steps through days; only the window's origin (x/y) moves,
+  // computed per day by viewBoxForDay.
+  const FULL_BBOX = computeBBox(Object.keys(POS), Object.values(EDGE_ROUTES));
+  const FIXED_SIZE = {
+    width: (FULL_BBOX.maxX - FULL_BBOX.minX) + VIEWBOX_PAD * 2,
+    height: (FULL_BBOX.maxY - FULL_BBOX.minY) + VIEWBOX_PAD * 2,
+  };
+
+  // The edge routes actually relevant to a given day: both endpoints must
+  // be states the day draws. Mirrors the same present-set filtering
+  // drawGraph's edge loop below does, kept in sync deliberately — this is
+  // used to compute *what to center*, drawGraph decides *what to draw*, and
+  // they must agree on that set or the window would center on content the
+  // day doesn't actually show.
+  function edgeRoutesForDay(day) {
+    const present = new Set(day.states.map((s) => s.id));
+    const routes = [];
+    for (const t of day.transitions) {
+      if (!present.has(t.from) || !present.has(t.to)) continue;
+      const route = EDGE_ROUTES[`${t.from}->${t.to}`];
+      if (route) routes.push(route);
+    }
+    return routes;
+  }
+
+  // This day's viewBox: FIXED_SIZE's width/height (constant, pins the
+  // scale — see the history above) with an origin chosen so this day's own
+  // content bbox sits centered inside that constant window. Days 4-6 draw
+  // the complete layout, so their centered bbox *is* FULL_BBOX and this
+  // returns exactly the old single FIXED_VIEWBOX's origin, byte-for-byte
+  // (padding is added symmetrically on every side, so it cancels out of the
+  // center — the centering math below never needs to add it back in).
+  function viewBoxForDay(day) {
+    const bbox = computeBBox(day.states.map((s) => s.id), edgeRoutesForDay(day));
+    if (!bbox) {
+      // No states this day (the legitimate "day has zero states" case
+      // defaultState() already warns about below) — nothing to center on;
+      // fall back to the full layout's own window rather than divide by a
+      // bbox that doesn't exist.
+      return {
+        x: FULL_BBOX.minX - VIEWBOX_PAD,
+        y: FULL_BBOX.minY - VIEWBOX_PAD,
+        width: FIXED_SIZE.width,
+        height: FIXED_SIZE.height,
+      };
+    }
+    const cx = (bbox.minX + bbox.maxX) / 2;
+    const cy = (bbox.minY + bbox.maxY) / 2;
+    return {
+      x: cx - FIXED_SIZE.width / 2,
+      y: cy - FIXED_SIZE.height / 2,
+      width: FIXED_SIZE.width,
+      height: FIXED_SIZE.height,
+    };
+  }
+
+  function viewBoxString(box) {
+    return `${box.x} ${box.y} ${box.width} ${box.height}`;
+  }
+
+  // Parses an SVG viewBox attribute string back into {x, y, width, height}.
+  // Used to read the *currently rendered* origin off the live <svg> so a day
+  // switch can pan from wherever the window actually is (which, mid-hammer,
+  // may be a just-cancelled pan's settled target rather than the previous
+  // day's own origin) to the new day's target. Returns null for a missing
+  // or malformed attribute (e.g. the very first render, before drawGraph has
+  // ever set one) so callers can treat "no prior value" as "don't pan".
+  function parseViewBox(str) {
+    if (!str) return null;
+    const parts = str.trim().split(/\s+/).map(Number);
+    if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return null;
+    return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
+  }
 
   // --- animation layer ---------------------------------------------------
   //
@@ -146,6 +228,8 @@
   //      "hidden" state into an element's real style/class — only into
   //      keyframes — so there is nothing for a cancel to get stuck in.
   const DUR = {
+    viewBoxPan: 280,
+    panLead: 40,
     nodeEnter: 240,
     nodePulse: 480,
     edgeDraw: 260,
@@ -192,6 +276,57 @@
     activeAnimations = [];
   }
 
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  // Pans the SVG's viewBox origin from `from` to `to` (same width/height —
+  // only x/y move) over `duration` ms, on a day switch. viewBox is a plain
+  // attribute, not a CSS property, so Element.animate() (used by every other
+  // animation in this file) can't touch it — WAAPI only drives style /
+  // presentation properties that have a CSS equivalent, and viewBox has
+  // none. This hand-rolled requestAnimationFrame loop is the only way to
+  // animate it.
+  //
+  // It exposes the same `.cancel()` shape an Animation object does, purely
+  // so activeAnimations / cancelActiveAnimations() (above) can track and
+  // cancel a pan exactly like every other animation here, with no special
+  // case at the call site. Cancelling always lands exactly on `to` rather
+  // than freezing mid-interpolation: hammering tabs mid-pan must never
+  // strand the viewBox at a half-panned value, and the next render reads
+  // this element's *current* viewBox attribute as its own pan's `from` — it
+  // needs a settled value, not one still in flight.
+  function animateViewBoxPan(svg, from, to, duration) {
+    const now = typeof performance !== 'undefined' ? () => performance.now() : () => Date.now();
+    const start = now();
+    let rafId = null;
+    let settled = false;
+    const settle = () => {
+      if (settled) return;
+      settled = true;
+      svg.setAttribute('viewBox', viewBoxString(to));
+    };
+    const step = () => {
+      const t = Math.min(1, (now() - start) / duration);
+      if (t >= 1) { settle(); return; }
+      const eased = easeOutCubic(t);
+      svg.setAttribute('viewBox', viewBoxString({
+        x: from.x + (to.x - from.x) * eased,
+        y: from.y + (to.y - from.y) * eased,
+        width: to.width,
+        height: to.height,
+      }));
+      rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+    return {
+      cancel() {
+        if (rafId !== null) cancelAnimationFrame(rafId);
+        settle();
+      },
+    };
+  }
+
   function el(name, attrs = {}, text = null) {
     const node = document.createElementNS(SVG_NS, name);
     for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
@@ -199,14 +334,19 @@
     return node;
   }
 
-  // New state node: scales up from center and fades in.
-  function animateNodeEnter(g) {
+  // New state node: scales up from center and fades in. `delay` lets a day
+  // switch that's also panning the viewBox (see animateViewBoxPan) hold the
+  // node at its pre-entrance keyframe (opacity 0, scale 0.85) for a beat so
+  // the pan visibly opens the space *first* — fill: 'backwards' is what
+  // makes the delay actually show that first keyframe instead of the node's
+  // plain final CSS appearance while it waits.
+  function animateNodeEnter(g, delay = 0) {
     trackAnim(g.animate(
       [
         { opacity: 0, transform: 'scale(0.85)' },
         { opacity: 1, transform: 'scale(1)' },
       ],
-      { duration: DUR.nodeEnter, easing: 'ease-out' },
+      { duration: DUR.nodeEnter, delay, easing: 'ease-out', fill: 'backwards' },
     ));
   }
 
@@ -340,11 +480,34 @@
   }
 
   function drawGraph(svg, day, selectedState, onSelect, animate) {
+    // Read the window's *current, settled* origin before touching anything
+    // — by the time drawGraph runs, render() has already cancelled any
+    // in-flight pan (cancelActiveAnimations, called just before this), which
+    // snaps the attribute to a real resting value. That's this render's
+    // `from`, if it turns out to be panning at all.
+    const prevViewBox = svg.getAttribute('viewBox');
     svg.replaceChildren();
-    svg.setAttribute('viewBox', FIXED_VIEWBOX);
-    const present = new Set(day.states.map((s) => s.id));
+
+    const target = viewBoxForDay(day);
     const animateThisRender = shouldAnimate(animate);
+    // Only pan when this render is an animated day switch (a node click, or
+    // a reduced-motion visitor, must leave the graph completely still) *and*
+    // the origin is actually moving — same day, same content bbox, same
+    // origin, so re-setting an identical viewBox is a no-op rather than a
+    // wasted zero-distance "animation".
+    const prevBox = animateThisRender ? parseViewBox(prevViewBox) : null;
+    const panning = !!prevBox && (prevBox.x !== target.x || prevBox.y !== target.y);
+    svg.setAttribute('viewBox', viewBoxString(panning ? prevBox : target));
+
+    const present = new Set(day.states.map((s) => s.id));
     const nodeIsArriving = animateThisRender && day.states.some((s) => s.isNew);
+    // When the pan is actually moving the window, let it lead a newly
+    // arriving node by a beat: the space visibly opens first, then the node
+    // grows into it, so panning and arrival read as one motion ("making
+    // room for the arrival") instead of two coincidentally-simultaneous
+    // animations. A day switch that isn't panning (no origin change) or
+    // isn't animated at all gets no lead — nothing to lead with.
+    const nodeEnterDelay = (panning && nodeIsArriving) ? DUR.panLead : 0;
     const changed = changedStates(day);
 
     const defs = el('defs');
@@ -386,7 +549,12 @@
       if (animateThisRender && t.isNew) {
         // Let a newly-arriving node finish taking shape before its edges
         // start growing out of it, then stagger the edges themselves.
-        const baseDelay = (nodeIsArriving ? DUR.edgeAfterNewNode : 0)
+        // nodeEnterDelay (the pan's head start, if any) shifts this whole
+        // chain back by the same beat the node itself was shifted, so the
+        // node-then-edges sequencing relative to *the node* is unchanged —
+        // only its position relative to wall-clock time (and the pan) moves.
+        const baseDelay = nodeEnterDelay
+          + (nodeIsArriving ? DUR.edgeAfterNewNode : 0)
           + newEdgeIndex * DUR.edgeStagger;
         animateEdgeDraw(path, arrowPath, label, baseDelay);
         newEdgeIndex += 1;
@@ -457,10 +625,14 @@
       svg.appendChild(g);
 
       if (animateThisRender && s.isNew) {
-        animateNodeEnter(g);
+        animateNodeEnter(g, nodeEnterDelay);
       } else if (animateThisRender && isChangedState) {
         animateNodePulse(g);
       }
+    }
+
+    if (panning) {
+      trackAnim(animateViewBoxPan(svg, prevBox, target, DUR.viewBoxPan));
     }
   }
 
