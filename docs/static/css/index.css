@@ -206,9 +206,32 @@ body {
   align-items: start;
 }
 
+/* The graph's viewBox is a single fixed box (memory-evolution.js) sized to
+   fit the complete layout at once, so its aspect ratio is wider/taller than
+   any one day's content. On desktop the 540px column (.fsm__panes above)
+   comfortably fits it. On very narrow screens (<=1023px collapses the panes
+   to one column, but a phone-width column is still much narrower than the
+   graph's natural size), letting the SVG shrink all the way down to that
+   column's width would shrink its text past legible — and that shrink must
+   not be "fixed" by changing the viewBox again (see the regression this
+   replaced, documented in memory-evolution.js), since that reintroduces a
+   scale that changes with content. Instead: never let the SVG render
+   smaller than min-width, and let this element (not the page) scroll
+   horizontally when the column is narrower than that.  min-width is chosen
+   close to the viewBox's own width (530 user units) so the graph is never
+   shrunk far from its natural, designed size. */
+.fsm__graph {
+  /* min-width: 0 overrides the grid item's default auto-min-width (which
+     would otherwise inherit the svg's min-width below and blow out the
+     grid track — and with it the page — instead of scrolling internally). */
+  min-width: 0;
+  overflow-x: auto;
+}
+
 .fsm__graph svg {
   width: 100%;
   height: auto;
+  min-width: 480px;
 }
 
 /* The node's main box is its own class, .fsm-node__box, deliberately NOT the
