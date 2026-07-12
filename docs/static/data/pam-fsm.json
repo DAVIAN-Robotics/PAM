@@ -226,7 +226,7 @@
     {
       "id": "routine-change",
       "label": "Routine Change",
-      "caption": "The user starts taking medication before eating. The reflector does not append a rule — it rewrites one: sitting down now means deliver the pill, and the cereal moves behind it.",
+      "caption": "The user starts taking medication before eating. The reflector does not append a rule — it rewrites one: sitting down now means deliver the pill, and the cereal moves behind it. The paper's Fig. 7 states this routine change only at the task-label granularity (\"Pill to Person\"), not as raw FSM sentences the way Days 1–5 are shown; the rule sentences below are a reconstruction in the idiom of Fig. 13.",
       "states": [
         {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
         {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},

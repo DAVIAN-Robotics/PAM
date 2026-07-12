@@ -128,3 +128,176 @@ body {
 @media (max-width: 640px) {
   .task-grid { grid-template-columns: 1fr; }
 }
+
+/* --- memory evolution --- */
+.fsm-legend-swatch {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 3px;
+  background: var(--pam-orange);
+  vertical-align: -1px;
+}
+
+.fsm__days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.fsm__day {
+  background: #fff;
+  border: 1px solid var(--pam-border);
+  border-radius: 999px;
+  color: var(--pam-gray);
+  cursor: pointer;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 0.95rem;
+  padding: 0.5rem 1.1rem;
+}
+
+.fsm__day:hover {
+  border-color: var(--pam-orange);
+  color: var(--pam-orange);
+}
+
+.fsm__day.is-active {
+  background: #202124;
+  border-color: #202124;
+  color: #fff;
+}
+
+.fsm__caption {
+  color: var(--pam-gray);
+  margin: 1.25rem auto 2rem;
+  max-width: 760px;
+  text-align: center;
+}
+
+.fsm__panes {
+  display: grid;
+  grid-template-columns: 540px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.fsm__graph svg {
+  width: 100%;
+  height: auto;
+}
+
+.fsm-node rect {
+  fill: #fff;
+  stroke: var(--pam-border);
+  stroke-width: 1.5;
+}
+
+.fsm-node { cursor: pointer; }
+.fsm-node:focus { outline: none; }
+.fsm-node:focus rect,
+.fsm-node:hover rect { stroke: var(--pam-orange); }
+
+.fsm-node.is-selected rect {
+  fill: #f1f3f4;
+  stroke: #202124;
+  stroke-width: 2;
+}
+
+.fsm-node.is-new rect {
+  fill: var(--pam-orange-soft);
+  stroke: var(--pam-orange);
+  stroke-width: 2;
+}
+
+.fsm-node-title {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 15px;
+  fill: #202124;
+}
+
+.fsm-node-sub {
+  font-size: 12px;
+  fill: var(--pam-gray);
+}
+
+.fsm-edge {
+  stroke: var(--pam-border);
+  stroke-width: 1.5;
+}
+
+.fsm-edge.is-new {
+  stroke: var(--pam-orange);
+  stroke-width: 2;
+}
+
+/* The cleaning_break -> working back-edge: dashed, always, regardless of
+   isNew coloring, so it never reads as identical to the forward edge. */
+.fsm-edge--back {
+  stroke-dasharray: 5 4;
+}
+
+.fsm-arrowhead { fill: var(--pam-gray); }
+.fsm-arrowhead.is-new { fill: var(--pam-orange); }
+
+.fsm-edge-label {
+  font-size: 11px;
+  fill: var(--pam-gray);
+}
+
+.fsm-edge-label.is-new { fill: var(--pam-orange); }
+
+.fsm-rules__head h3 {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 1.25rem;
+}
+
+.fsm-rules__head p {
+  color: var(--pam-gray);
+  margin-bottom: 1.25rem;
+}
+
+.fsm-rules__empty { color: var(--pam-gray); }
+
+.fsm-rule {
+  background: #fff;
+  border: 1px solid var(--pam-border);
+  border-left: 3px solid var(--pam-border);
+  border-radius: 6px;
+  margin-bottom: 0.85rem;
+  padding: 0.85rem 1rem;
+}
+
+.fsm-rule.is-new,
+.fsm-rule.is-revised {
+  background: var(--pam-orange-soft);
+  border-color: var(--pam-orange);
+  border-left-color: var(--pam-orange);
+}
+
+.fsm-rule__triggers {
+  color: var(--pam-gray);
+  font-size: 0.92rem;
+}
+
+.fsm-rule__trigger.is-new {
+  color: var(--pam-orange);
+  font-weight: 600;
+}
+
+.fsm-rule__or { color: #9aa0a6; }
+
+.fsm-rule__action {
+  font-weight: 600;
+  margin-top: 0.35rem;
+}
+
+.fsm-rule__was {
+  color: var(--pam-orange);
+  font-size: 0.85rem;
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 1023px) {
+  .fsm__panes { grid-template-columns: 1fr; }
+}
