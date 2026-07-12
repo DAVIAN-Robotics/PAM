@@ -1,11 +1,17 @@
 :root {
   --pam-orange: #e8710a;
   --pam-orange-soft: #fff1e2;
-  /* Memory Evolution's "new/changed" accent (Change 1): blue, to match the
-     FSM-memory series color in the paper's results figures (Fig. 5, 11, 21)
-     rather than Fig. 12's orange ink. Scoped to #memory-evolution only —
-     every other --pam-orange use on the page (e.g. .pam-table__ours in the
-     Closed-Loop section) is intentionally left alone. */
+  /* Memory Evolution's "new/changed" accent (Change 1): blue, to match both
+     the FSM-memory series color in the paper's results figures (Fig. 5, 11,
+     21) and the paper's own Fig. 7 — the figure this section replaces, and
+     which is still its fallback image — which already inks newly-added
+     memory content blue (and a routine-change revision red). This page
+     collapses Fig. 7's blue/red add-vs-revise distinction into a single
+     blue for everything the reflector touches (added, changed, or
+     rewritten); see the .fsm-rule.is-revised styling below for where that
+     collapse happens. Scoped to #memory-evolution only — every other
+     --pam-orange use on the page (e.g. .pam-table__ours in the Closed-Loop
+     section) is intentionally left alone. */
   --pam-blue: #1a73e8;
   --pam-blue-soft: #e8f0fe;
   --pam-gray: #5f6368;
@@ -139,11 +145,22 @@ body {
 /* --- memory evolution --- */
 .fsm-legend-swatch {
   display: inline-block;
+  box-sizing: border-box;
   width: 0.9em;
   height: 0.9em;
   border-radius: 3px;
   background: var(--pam-blue);
   vertical-align: -1px;
+}
+
+/* Mirrors .fsm-node.is-changed's treatment (white fill, blue stroke only) so
+   the legend's two swatches read as the same filled/outline distinction as
+   the graph itself: the plain .fsm-legend-swatch above stands for a filled,
+   brand-new node (.fsm-node.is-new); this modifier stands for an existing
+   node whose rules changed (.fsm-node.is-changed), an outline only. */
+.fsm-legend-swatch--outline {
+  background: #fff;
+  border: 2px solid var(--pam-blue);
 }
 
 .fsm__days {

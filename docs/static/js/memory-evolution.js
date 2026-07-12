@@ -22,7 +22,42 @@
     cleaning_break: { x: 300, y: 260 },
     leaving: { x: 20, y: 460 },
   };
-  const VIEWBOX = '0 0 540 560';
+  // Fallback only — used if a day somehow has no positioned states (not the
+  // case for any day in the current data). The real, per-day viewBox is
+  // computed by viewBoxForDay() below.
+  const DEFAULT_VIEWBOX = '0 0 540 560';
+  const VIEWBOX_PAD = 20;
+
+  // The graph's fixed layout (POS/NODE_W/NODE_H, untouched by this function)
+  // packs every state that can ever appear, including cleaning_break's extra
+  // column, into one 540x560 box. On Days 1-3, cleaning_break does not exist
+  // yet, so that box is mostly empty on the right — the four-state spine
+  // only occupies its left ~250 units. Because the SVG scales to its
+  // container at a fixed aspect ratio (width: 100%; height: auto in CSS),
+  // rendering that mostly-empty box at a narrow mobile width shrinks the
+  // *content* (which only fills part of the box) even further, down to
+  // unreadably small node text. Fitting the viewBox to the bounding box of
+  // just the nodes actually drawn this day — rather than the fixed box that
+  // fits every day at once — makes the content fill the available width on
+  // every day, narrow four-state days included. Node positions themselves
+  // (POS) are never touched; only the window we view them through changes.
+  function viewBoxForDay(day) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const s of day.states) {
+      const p = POS[s.id];
+      if (!p) continue; // same guard as drawGraph: an unknown state id is skipped, not fatal
+      minX = Math.min(minX, p.x);
+      minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x + NODE_W);
+      maxY = Math.max(maxY, p.y + NODE_H);
+    }
+    if (!Number.isFinite(minX)) return DEFAULT_VIEWBOX; // no positioned states this day
+    minX -= VIEWBOX_PAD;
+    minY -= VIEWBOX_PAD;
+    maxX += VIEWBOX_PAD;
+    maxY += VIEWBOX_PAD;
+    return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
+  }
 
   // Every edge that can ever appear (5 total, across all six days) gets an
   // explicit hand-routed path rather than a generic center-to-center line, so
@@ -286,7 +321,7 @@
 
   function drawGraph(svg, day, selectedState, onSelect, animate) {
     svg.replaceChildren();
-    svg.setAttribute('viewBox', VIEWBOX);
+    svg.setAttribute('viewBox', viewBoxForDay(day));
     const present = new Set(day.states.map((s) => s.id));
     const animateThisRender = shouldAnimate(animate);
     const nodeIsArriving = animateThisRender && day.states.some((s) => s.isNew);

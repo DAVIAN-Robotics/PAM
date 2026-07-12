@@ -46,10 +46,12 @@
             <span>arXiv</span>
           </a>
           -->
-          <a class="button is-rounded is-dark" href="#">
+          <!-- Code button goes here once the repo is public: uncomment and fill in the URL.
+          <a class="button is-rounded is-dark" href="https://github.com/XXXX/XXXX">
             <span class="icon"><i class="fab fa-github"></i></span>
             <span>Code</span>
           </a>
+          -->
         </div>
       </div>
     </div>
@@ -58,7 +60,7 @@
   <!-- Task 3 -->
   <section class="section" id="teaser">
     <div class="container is-max-desktop">
-      <div class="video-slot video-slot--wide">
+      <div class="video-slot">
         <video controls playsinline preload="metadata" src="static/videos/teaser.mp4"></video>
         <div class="video-slot__fallback"><span>Video coming soon</span></div>
       </div>
@@ -109,8 +111,10 @@
           A person sits down with an empty bowl. Oatmeal? Cereal? Yogurt? Nothing in the scene
           settles it &mdash; the answer lives in the user's habits, not in the pixels. A zero-shot
           VLM, unable to tell which of several plausible interventions is the right one, does the
-          safe thing and does nothing. That conservatism is why memory-free baselines score
-          near-zero recall on every proactive task, on every one of the five evaluation days.
+          safe thing and does nothing. That conservatism runs deep: LIT and Event-Driven rarely
+          fire on any proactive task, at near-zero recall throughout the five days. The Zero-shot
+          VLM does fire more often, but it plateaus after Day 1 &mdash; five days of repeated
+          exposure to the same routine never sharpens it further.
         </p>
         <p>
           The missing information is learnable, and cheaply. Everyday routines repeat, so a handful
@@ -171,7 +175,7 @@
 
       <div class="figure" style="margin-bottom: 2.5rem;">
         <img src="static/images/fig4_tasks.png"
-             alt="Six real desk-camera frames, one per task, each with the task-relevant object circled in yellow: a milk carton, a cereal box, a bowl, and a used wet wipe on the same cluttered desk.">
+             alt="Six real desk-camera frames, one per task, each with the task-relevant object circled in yellow: a milk bottle, a cereal bag, a bowl, and a used wet wipe on the same cluttered desk.">
         <p class="figure-caption">
           The six tasks are not independent demos. They form one continuous desk routine, in the
           order a single morning actually unfolds &mdash; which is what makes knowing <em>when</em>
@@ -243,9 +247,11 @@
       <h2 class="title is-3 section-heading has-text-centered">Watch the Memory Write Itself</h2>
       <p class="content is-medium has-text-centered" id="fsm-intro" style="max-width: 820px; margin: 0 auto 2rem;">
         Every night, the reflector watches the day's recording and edits PAM.
-        <span id="fsm-intro-interactive">Step through the days to see what it changed.
-        <span class="fsm-legend-swatch"></span> marks what the reflection at the end of the
-        previous day added.</span>
+        <span id="fsm-intro-interactive">Step through the days to see what it changed:
+        <span class="fsm-legend-swatch"></span> is a state added that night,
+        <span class="fsm-legend-swatch fsm-legend-swatch--outline"></span> is an existing state
+        whose rules changed, and blue text in the rules on the right marks what was added,
+        broadened, or &mdash; on the Routine Change day &mdash; rewritten.</span>
       </p>
 
       <div class="fsm" id="fsm" hidden>

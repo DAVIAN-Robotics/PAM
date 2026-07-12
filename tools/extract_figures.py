@@ -12,11 +12,9 @@ PDF = pathlib.Path("docs/static/pdfs/PAM.pdf")
 OUT = pathlib.Path("docs/static/images")
 DPI = 300
 
-X0, X1 = 0.10, 0.90  # text margins, used by full-width figures
+X0, X1 = 0.10, 0.90  # text margins, shared by every figure below
 
 # name -> (1-indexed page, y0 fraction, y1 fraction)
-# Entries may optionally be (page, x0, x1, y0, y1) to override the shared
-# X0/X1 text-margin crop for figures that aren't full-width.
 FIGURES = {
     "fig1_motivation":          (2,  0.06, 0.28),
     "fig2_overview":            (3,  0.06, 0.26),
@@ -37,11 +35,8 @@ def main() -> None:
     doc = fitz.open(PDF)
     zoom = DPI / 72.0
     for name, spec in FIGURES.items():
-        if len(spec) == 5:
-            page_no, x0, x1, y0, y1 = spec
-        else:
-            page_no, y0, y1 = spec
-            x0, x1 = X0, X1
+        page_no, y0, y1 = spec
+        x0, x1 = X0, X1
         page = doc[page_no - 1]
         r = page.rect
         clip = fitz.Rect(
