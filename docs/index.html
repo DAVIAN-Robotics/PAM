@@ -151,7 +151,7 @@
           receives the latest <em>W</em> = 5 frames, PAM as text, and one fixed instruction,
           <em>"Proactively help the user before they ask."</em> Using the routine stored in PAM to
           interpret what it sees, it outputs either a task in natural language or
-          <code>NO_ACT</code>. The predicted task goes to a &pi;<sub>0.5</sub> executor, which
+          NO_ACT. The predicted task goes to a &pi;<sub>0.5</sub> executor, which
           serves as System 1 and generates the robot actions. For example, as the user pours
           cereal, the predictor selects <em>"bring milk"</em>, and the executor picks up the milk
           and places it next to the user.
@@ -277,7 +277,7 @@
       <div class="content is-medium" style="max-width: 820px; margin: 2.5rem auto 0;">
         <p>
           <strong>Evaluation.</strong> Proactive task prediction is scored as per-frame
-          classification over the six tasks plus <code>NO_ACT</code>, on routine videos sampled at
+          classification over the six tasks plus NO_ACT, on routine videos sampled at
           1&nbsp;fps. We report precision, recall, and F1, and the <em>first-fire delay</em>: the
           time from when assistance should be given until the model first predicts that task. PAM
           persists across a five-day evaluation and is updated after each day.
@@ -309,7 +309,7 @@
       <div class="content is-medium" style="margin-top: 1.5rem;">
         <p>
           <strong>Memory is what lets the robot act.</strong> Without knowledge of the user's
-          routine, LIT, Event-Driven, and the Zero-shot VLM fall back on <code>NO_ACT</code>
+          routine, LIT, Event-Driven, and the Zero-shot VLM fall back on NO_ACT
           whenever the scene is ambiguous. LIT and Event-Driven rarely fire any proactive task, and
           the Zero-shot VLM plateaus from Day 2 onward. All three stay essentially flat across the
           five days: without memory, repeated exposure does not turn into better proactive
@@ -320,9 +320,9 @@
           because a flat list offers no abstraction over recurring states as it grows. FSM Memory
           improves on every day and achieves the highest precision, recall, and F1 on
           T1&ndash;T6, so the gain comes from the structure itself and not just from adding memory.
-          The cost is some eagerness: FSM Memory's <code>NO_ACT</code> recall is lower than the
-          conservative baselines', although its higher <code>NO_ACT</code> precision keeps
-          <code>NO_ACT</code> F1 on par.
+          The cost is some eagerness: FSM Memory's NO_ACT recall is lower than the
+          conservative baselines', although its higher NO_ACT precision keeps
+          NO_ACT F1 on par.
         </p>
       </div>
     </div>
