@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PAM: Procedural Assistance Memory for Proactive Robot</title>
+  <title>PAM: An Agentic Framework for Proactive Robots with Procedural Assistance Memory</title>
   <meta name="description"
         content="A finite-state assistance memory that lets a robot learn when and how to help, from a few days of watching one user.">
 
@@ -20,7 +20,7 @@
     <div class="hero-body">
       <div class="container is-max-desktop has-text-centered">
         <h1 class="title is-1 publication-title">
-          Procedural Assistance Memory for Proactive Robot
+          An Agentic Framework for Proactive Robots with Procedural Assistance Memory
         </h1>
         <p class="subtitle is-5 pam-authors">
           <span><a href="https://www.linkedin.com/in/aiclaudev/">Dohyun Lee</a><sup>*</sup>,</span>
@@ -34,6 +34,7 @@
         </p>
         <p class="pam-affiliation">KAIST AI</p>
         <p class="pam-equal"><sup>*</sup> indicates equal contribution.</p>
+        <p class="pam-venue"><strong>CoRL 2026</strong></p>
 
         <div class="pam-links">
           <a class="button is-rounded is-dark" href="static/pdfs/PAM.pdf">
@@ -74,23 +75,23 @@
       <h2 class="title is-3 section-heading has-text-centered">Abstract</h2>
       <div class="content is-medium">
         <p>
-          Proactive robot assistance requires acting on user needs before explicit requests, but
-          zero-shot vision-language models struggle in this setting: lacking knowledge of the user's
-          personal routine, they treat every situation as general and uncertain, defaulting to
-          inaction rather than risking an incorrect intervention. We observe that everyday routines
-          are highly repetitive, so even a few interactions reveal stable user-specific patterns that
-          can ground proactive decisions. Based on this, we propose a System 1&ndash;2 framework in
-          which a VLM task predictor reads a Procedural Assistance Memory (PAM) alongside the current
-          observation to decide when and how to assist, and a VLA executor realizes the predicted
-          task as low-level robot action. PAM is structured as a finite-state machine over activity
+          Proactive robots should anticipate user needs and provide assistance before being
+          explicitly asked. A straightforward approach is to infer human intentions from commonsense
+          knowledge, but the same observed behavior can imply different needs across users,
+          potentially leading to unwanted assistance. We observe that everyday routines in the real
+          world exhibit recurring patterns, so learning these patterns can reduce ambiguity in
+          proactive decisions. Based on this, we propose a memory-based agentic framework in which a
+          VLM task predictor reads a <em>Procedural Assistance Memory</em> (PAM) alongside the
+          current observation to decide when to assist and what task to perform, and a VLA executor
+          performs the predicted task. PAM is structured as a finite-state machine over activity
           phases, per-state assistance rules, and event-driven transitions; a reflection VLM revises
-          PAM from each day's interaction trace without weight updates or retraining. We evaluate on
-          a multi-day desk-assistance scenario with six pick-and-place tasks. Memory-free baselines
-          remain conservative across all five evaluation days, yielding near-zero recall on proactive
-          tasks. Our system improves consistently with accumulated experience, achieving the highest
-          precision, recall, and F1 and reducing first-fire delay from approximately 5 seconds on
-          Day 1 to 1 second by Day 5. Ablations further show that the FSM structure, rather than
-          memory alone, is the primary driver of these gains.
+          PAM from each day's interaction trace without weight updates or retraining. In our 5-day
+          desk-assistance evaluation, memory-free baselines remain conservative, with limited recall
+          on proactive tasks. Our system improves consistently with accumulated experience,
+          achieving the highest precision, recall, and F1 and reducing first-fire delay from
+          approximately 5 seconds on Day 1 to 1 second by Day 5. Our approach also adapts to
+          changes in the user's routine through continued memory reflection, recovering from
+          memory&ndash;routine misalignment after a single memory update.
         </p>
       </div>
     </div>
@@ -111,7 +112,7 @@
           VLM, unable to tell which of several plausible interventions is the right one, does the
           safe thing and does nothing. That conservatism runs deep: LIT and Event-Driven rarely
           fire on any proactive task, at near-zero recall throughout the five days. The Zero-shot
-          VLM does fire more often, but it plateaus after Day 1 &mdash; five days of repeated
+          VLM does fire more often, but it plateaus from Day 2 onward &mdash; five days of repeated
           exposure to the same routine never sharpens it further.
         </p>
         <p>
@@ -144,14 +145,15 @@
         </p>
         <p>
           <strong>The memory writes itself.</strong> At the end of each day, a reflector &mdash; the
-          same backbone, thinking on &mdash; watches the day's recording and rewrites PAM: adding
+          same backbone, thinking on &mdash; reads sampled frames from the day's recording, a summary
+          of the day's action history, and user feedback when available, and rewrites PAM: adding
           the assistive opportunities the robot missed, broadening triggers that fired too late,
           introducing new states, and revising rules that no longer match what the user does. No
           gradients, no retraining, no human writing rules.
         </p>
       </div>
       <div class="figure" style="margin-top: 2.5rem; max-width: 800px;">
-        <img src="static/images/fig9_cameras.png"
+        <img src="static/images/fig10_cameras.png"
              alt="Camera setup: two back-facing cameras observe the user and the desk; a wrist camera provides close-up grasp context.">
         <p class="figure-caption">
           A Franka Research 3 arm and three RealSense cameras. The VLM stack sees only the two
@@ -269,7 +271,7 @@
         <img src="static/images/fig7_memory_evolution.png"
              alt="The FSM memory on Day 3, Day 5, and after a routine change.">
         <p class="figure-caption">
-          The FSM memory on Day 3, Day 5, and after the routine change (paper, Fig. 7).
+          The FSM memory on Day 3, Day 5, and after the routine change (paper, Fig.&nbsp;7).
         </p>
       </div>
     </div>
@@ -284,32 +286,35 @@
         <img src="static/images/fig5_multiday.png"
              alt="Per-day precision, recall, F1, and first-fire delay for all methods across five days.">
         <p class="figure-caption">
-          Memory-free baselines never move: with no knowledge of the routine they fall back on
-          <code>NO_ACT</code>, and their recall on the six proactive tasks stays near zero for all
-          five days. Our FSM memory climbs every day, and the robot fires sooner as it goes &mdash;
-          first-fire delay falls from about 5 seconds on Day 1 to about 1 second by Day 5.
+          Memory-free baselines stay flat: with no knowledge of the routine they fall back on
+          <code>NO_ACT</code> whenever the scene is ambiguous. LIT and Event-Driven rarely fire any
+          proactive task, and the Zero-shot VLM plateaus from Day 2 onward. Our FSM memory climbs
+          every day, reaching the highest precision, recall, and F1, and the robot fires sooner as
+          it goes &mdash; first-fire delay falls from about 5 seconds on Day 1 to about 1 second by
+          Day 5. A flat list memory improves too, but saturates early.
         </p>
       </div>
 
       <div class="figure" style="margin-top: 3rem;">
-        <img src="static/images/fig11_selfevolving.png"
+        <img src="static/images/fig12_selfevolving.png"
              alt="Self-evolving memory compared against a memory frozen after Day 1 and a zero-shot VLM.">
         <p class="figure-caption">
           Having a memory is not the point &mdash; keeping it up to date is. A memory frozen after
-          Day 1 gains once, then tracks the zero-shot curve. Only the self-evolving memory keeps
-          pulling away, and the gap widens with every day of reflection.
+          Day 1 beats the zero-shot VLM once it exists, but it never learns anything new and its
+          first-fire delay plateaus near 2 seconds. Only the self-evolving memory keeps improving,
+          reaching the highest final precision, recall, and F1.
         </p>
       </div>
 
       <div class="figure" style="margin-top: 3rem;">
-        <img src="static/images/fig10_pertask.png"
+        <img src="static/images/fig11_pertask.png"
              alt="Per-task precision, recall, and F1 for every method.">
         <p class="figure-caption">
           Memory helps most exactly where the scene is not enough: T2 (Milk&rarr;Person) and T3
           (Cereal&rarr;Storage), where what to do next depends on this user's habitual pairing rather
           than on anything visible. The FSM's lead over a flat list is largest on the put-away
-          actions, which must fire within a narrow window and are easily confused with similar
-          moments elsewhere in the routine.
+          actions, T3 (Cereal&rarr;Storage) and T4 (Milk&rarr;Storage): organizing rules by activity
+          phase tells the predictor when it is time to put items away.
         </p>
       </div>
     </div>
@@ -394,40 +399,59 @@
     <div class="container is-max-desktop">
       <h2 class="title is-3 section-heading has-text-centered">Does It Only Work on One Routine?</h2>
 
-      <h3 class="title is-5" style="margin-top: 1rem;">A harder routine, with almost no cues</h3>
+      <h3 class="title is-5" style="margin-top: 1rem;">A different routine, with almost no cues</h3>
       <div class="figure">
-        <img src="static/images/fig20_medication.png"
-             alt="The medication routine: the person enters empty-handed, takes a pill with water, then drinks a Coke while working.">
+        <img src="static/images/fig21_vitamin.png"
+             alt="The vitamin routine: the person enters empty-handed, takes vitamins with water, then drinks a Coke while working on the laptop before leaving.">
       </div>
       <div class="content is-medium" style="margin-top: 1.25rem;">
         <p>
           In the desk routine, an empty bowl is a strong hint. So we built a routine that offers
-          almost none: the user walks in empty-handed, takes a pill with water, then drinks a Coke
-          while working. Nothing on the desk says what comes next &mdash; which is precisely the
-          knowledge a memory is supposed to supply.
+          almost none: the user arrives empty-handed, takes vitamins with water, then drinks a can
+          of Coke while working on the laptop before leaving. The robot is responsible for six
+          tasks: deliver the vitamins, deliver the water, return the vitamin bottle, return the
+          water bottle, deliver the Coke, and discard the empty can. Nothing on the desk says what
+          comes next &mdash; which is precisely the knowledge a memory is supposed to supply.
         </p>
       </div>
       <div class="figure" style="margin-top: 1.5rem;">
-        <img src="static/images/fig21_medication_results.png"
-             alt="Five-day results on the medication routine.">
+        <img src="static/images/fig22_vitamin_results.png"
+             alt="Five-day results on the vitamin routine.">
         <p class="figure-caption">
-          The FSM memory still improves day over day and still leads on precision, recall, and F1,
-          cutting first-fire delay from roughly 17 seconds to about 10. The event-driven baseline,
-          with no memory and nothing in the scene to react to, never fires at all.
+          The FSM memory still improves precision, recall, and F1 from Day 1 to Day 5, cutting
+          first-fire delay from roughly 17 seconds to about 10. List Memory and the memory-free
+          baselines show limited improvement.
         </p>
       </div>
 
       <h3 class="title is-5" style="margin-top: 3rem;">What if the user's routine changes entirely?</h3>
+      <div class="content is-medium">
+        <p>
+          A user who has followed the cereal routine (Scenario A) for five days suddenly switches to
+          the vitamin routine (Scenario B). <em>A-Frozen</em> keeps the Day-5 memory from Scenario A
+          unchanged; <em>A-Evolving</em> starts from the same memory but keeps reflecting at the end
+          of every day in Scenario B. We compare both against <em>Scratch-Evolving</em>, which builds
+          a memory from scratch on B, and the Zero-shot VLM, which uses no memory.
+        </p>
+      </div>
       <div class="figure">
-        <img src="static/images/fig22_transfer.png"
-             alt="Adapting a memory built on one routine to a different one, in both directions.">
+        <img src="static/images/fig6_transfer_A2B.png"
+             alt="Memory adaptation from Scenario A to Scenario B: A-Evolving, Scratch-Evolving, A-Frozen, and Zero-shot VLM over five days.">
         <p class="figure-caption">
-          Loading a memory built for a different routine and freezing it is worse than having no
-          memory at all &mdash; the old routine's vocabulary fires false positives on the new
-          content. But leave the reflector running and the problem evaporates: it starts a step
-          behind on Day 1, but by Day 3 it has replaced the stale pairs and caught up with a memory
-          started from scratch. A deployed robot does not need its memory wiped when the user's
-          life changes.
+          Scenario A&rarr;B. On Day 1 the old memory confuses the predictor: A-Evolving falls below
+          the Zero-shot VLM in recall and F1. After a single reflection at the end of Day 1, it
+          reaches the level of Scratch-Evolving on Day 2 and stays close for the rest of the week,
+          while A-Frozen stays below the Zero-shot VLM throughout. First-fire delay also keeps
+          dropping with continued reflection.
+        </p>
+      </div>
+      <div class="figure" style="margin-top: 2rem;">
+        <img src="static/images/fig23_transfer_B2A.png"
+             alt="Memory adaptation from Scenario B to Scenario A: B-Evolving, Scratch-Evolving, B-Frozen, and Zero-shot VLM over five days.">
+        <p class="figure-caption">
+          The reverse direction, Scenario B&rarr;A. B-Frozen again performs worse than the Zero-shot
+          VLM, whereas B-Evolving approaches Scratch-Evolving by Day 3. A deployed robot does not
+          need its memory wiped when the user's life changes.
         </p>
       </div>
     </div>
@@ -444,7 +468,12 @@
             <span>Copy</span>
           </button>
         </div>
-        <pre id="bibtex-text">TBA</pre>
+        <pre id="bibtex-text">@inproceedings{lee2026pam,
+  title     = {An Agentic Framework for Proactive Robots with Procedural Assistance Memory},
+  author    = {Lee, Dohyun and Park, Minho and Park, Jeonghoon and Hwang, Dongyoon and Hyung, Junha and Hwang, Sungwon and Lee, Byungkun and Choo, Jaegul},
+  booktitle = {Conference on Robot Learning (CoRL)},
+  year      = {2026}
+}</pre>
       </div>
     </div>
   </section>

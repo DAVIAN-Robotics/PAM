@@ -226,7 +226,7 @@
     {
       "id": "routine-change",
       "label": "Routine Change",
-      "caption": "The user starts taking medication before eating. The reflector does not append a rule — it rewrites one: sitting down now means deliver the pill, and the cereal moves behind it. The paper's Fig. 7 states this routine change only at the task-label granularity (\"Pill to Person\"), not as raw FSM sentences the way Days 1–5 are shown; the rule sentences below are a reconstruction in the idiom of Fig. 13.",
+      "caption": "The user switches to a routine that starts with vitamins. The reflector does not append a rule — it rewrites one: sitting down now means deliver the pill instead of the cereal, and picking up the pill means deliver water. The paper's Fig. 7 shows this change at the task-label granularity (\"Pill to Person\", \"Water to Person\"); the rule sentences below are a reconstruction in the idiom of Fig. 13.",
       "states": [
         {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
         {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
@@ -250,7 +250,7 @@
            "action": "Pick up the pill and place it next to the person.", "isNew": false, "isRevised": true,
            "wasAction": "Pick up the cereal bag and place it next to the person."},
           {"triggers": [{"text": "Person picks pill", "isNew": true}],
-           "action": "Pick up the cereal bag and place it next to the person.", "isNew": true},
+           "action": "Pick up the water bottle and place it next to the person.", "isNew": true},
           {"triggers": [
              {"text": "Person pours cereal into the bowl", "isNew": false},
              {"text": "Person places the cereal bag on the desk", "isNew": false}

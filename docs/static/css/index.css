@@ -89,6 +89,12 @@ body {
   margin-top: 0.25rem;
 }
 
+.pam-venue {
+  color: var(--pam-blue);
+  font-size: 1.15rem;
+  margin-top: 0.5rem;
+}
+
 .pam-links {
   display: flex;
   flex-wrap: wrap;
