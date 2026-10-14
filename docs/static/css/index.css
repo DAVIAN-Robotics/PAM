@@ -578,3 +578,22 @@ body {
 section[id] {
   scroll-margin-top: 1.5rem;
 }
+
+/* No dangling words: balance short centered lines (titles, captions, task
+   labels) and keep at least two words on the last line of body paragraphs. */
+.publication-title,
+.section-heading,
+.title,
+.figure-caption,
+.task-card__label,
+.task-card__caption,
+.fsm__caption,
+.pam-venue,
+p.has-text-centered {
+  text-wrap: balance;
+}
+
+.content p,
+.content li {
+  text-wrap: pretty;
+}
