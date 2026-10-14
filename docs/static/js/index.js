@@ -48,8 +48,41 @@ function setupHeadingAnchors() {
   });
 }
 
+// Keep the last two words of a block on one line, so no paragraph, caption, or
+// heading ends with a single dangling word. CSS text-wrap: pretty does not do
+// this in every browser, so swap the last word gap for a no-break space.
+function glueLastWords(el) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+
+  let seenWord = false;
+  for (let i = nodes.length - 1; i >= 0; i -= 1) {
+    const text = nodes[i].nodeValue;
+    for (let j = text.length - 1; j >= 0; j -= 1) {
+      const isSpace = /\s/.test(text[j]) && text[j] !== '\u00a0';
+      if (!isSpace) {
+        seenWord = true;
+      } else if (seenWord) {
+        let start = j;
+        while (start > 0 && /\s/.test(text[start - 1])) start -= 1;
+        nodes[i].nodeValue = `${text.slice(0, start)}\u00a0${text.slice(j + 1)}`;
+        return;
+      }
+    }
+  }
+}
+window.glueLastWords = glueLastWords;
+
+function setupNoDanglingWords() {
+  document.querySelectorAll(
+    '.content p, .content li, .figure-caption, .task-card__label, .task-card__caption, p.has-text-centered, h1, h2, h3',
+  ).forEach(glueLastWords);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   setupVideoSlots();
   setupBibtexCopy();
   setupHeadingAnchors();
+  setupNoDanglingWords();
 });

@@ -927,6 +927,7 @@
       if (!stateIsValid) stateId = defaultState(day);
 
       caption.textContent = day.caption;
+      if (window.glueLastWords) window.glueLastWords(caption);
       drawGraph(svg, day, stateId, (id) => { stateId = id; render(false, true); }, animateGraph);
       drawRules(rules, day, stateId, animateRules);
 
