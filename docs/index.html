@@ -336,18 +336,20 @@
   <section class="section" id="memory-evolution">
     <div class="container is-max-widescreen">
       <h2 class="title is-3 section-heading has-text-centered">Qualitative Memory Evolution</h2>
-      <p class="content is-medium has-text-centered" id="fsm-intro" style="max-width: 820px; margin: 0 auto 2rem;">
-        Comparing Day 3 and Day 5, the FSM-based PAM becomes increasingly accurate: trigger-action
-        pairs that were missing on Day 3 are recovered on Day 5, with each state capturing its full
-        set of triggers and actions. Our FSM-based PAM also adapts dynamically when the user's
-        routine changes: the transition "person sits down" &rarr; "cereal to person" is revised,
-        after reflection, to "person sits down" &rarr; "vitamin to person".
-        <span id="fsm-intro-interactive">Step through the days:
-        <span class="fsm-legend-swatch"></span> is a state added that night,
-        <span class="fsm-legend-swatch fsm-legend-swatch--outline"></span> is an existing state
-        whose rules changed, and blue text in the rules marks what was added, broadened, or
-        rewritten.</span>
-      </p>
+      <div class="content is-medium" id="fsm-intro" style="max-width: 820px; margin: 0 auto 2rem;">
+        <p>
+          Comparing Day 3 and Day 5, the FSM-based PAM becomes increasingly accurate: trigger-action
+          pairs that were missing on Day 3 are recovered on Day 5, with each state capturing its full
+          set of triggers and actions. Our FSM-based PAM also adapts dynamically when the user's
+          routine changes: the transition "person sits down" &rarr; "cereal to person" is revised,
+          after reflection, to "person sits down" &rarr; "vitamin to person".
+          <span id="fsm-intro-interactive">Step through the days:
+          <span class="fsm-legend-swatch"></span> is a state added that night,
+          <span class="fsm-legend-swatch fsm-legend-swatch--outline"></span> is an existing state
+          whose rules changed, and blue text in the rules marks what was added, broadened, or
+          rewritten.</span>
+        </p>
+      </div>
 
       <div class="fsm" id="fsm" hidden>
         <div class="fsm__days" id="fsm-days" role="tablist" aria-label="Day"></div>
@@ -376,11 +378,13 @@
   <section class="section" id="closed-loop">
     <div class="container is-max-widescreen">
       <h2 class="title is-3 section-heading has-text-centered">Comparison with Monolithic VLAs</h2>
-      <p class="content is-medium has-text-centered" style="max-width: 820px; margin: 0 auto 2rem;">
-        We compare with two VLA baselines, &pi;<sub>0.5</sub> and &pi;<sub>0.5</sub> (Reasoning),
-        which we finetune on 10 episodes in which the robot performs all six assistance tasks
-        throughout the user's routine.
-      </p>
+      <div class="content is-medium" style="max-width: 820px; margin: 0 auto 2rem;">
+        <p>
+          We compare with two VLA baselines, &pi;<sub>0.5</sub> and &pi;<sub>0.5</sub> (Reasoning),
+          which we finetune on 10 episodes in which the robot performs all six assistance tasks
+          throughout the user's routine.
+        </p>
+      </div>
 
       <div class="compare-grid">
         <div class="compare-cell">
