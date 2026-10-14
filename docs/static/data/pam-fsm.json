@@ -3,7 +3,7 @@
     {
       "id": "day1",
       "label": "Day 1",
-      "caption": "The first reflection installs the skeleton: four states and two rules — bring the cereal, put the bowl away.",
+      "caption": "Day 1 installs the skeleton: four states (meal_preparation → eating → working → leaving) with two core pairs, bring-cereal and bowl-storage.",
       "states": [
         {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": true},
         {"id": "eating", "desc": "Person is consuming the meal.", "isNew": true},
@@ -31,7 +31,7 @@
     {
       "id": "day2",
       "label": "Day 2",
-      "caption": "The bring-milk rule appears, and the bring-cereal trigger broadens: sitting down is enough, the bowl need not be on the desk yet.",
+      "caption": "Day 2 adds the bring-milk pair to meal_preparation and broadens the bring-cereal trigger with an or-clause.",
       "states": [
         {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
         {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
@@ -64,7 +64,7 @@
     {
       "id": "day3",
       "label": "Day 3",
-      "caption": "Both put-away rules arrive. Neither can trigger on the object it moves, so the reflector finds an indirect cue for each: put-cereal-back fires on the user reaching for the next ingredient (the milk), and put-milk-back fires on the user picking up a spoon to eat.",
+      "caption": "Day 3 adds the put-cereal-back and put-milk-back pairs to the same state, and broadens the bring-milk and bowl-storage triggers.",
       "states": [
         {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
         {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
@@ -107,7 +107,7 @@
     {
       "id": "day4",
       "label": "Day 4",
-      "caption": "A new cleaning_break state appears with the wet-wipe rule, looping out of and back into working. Both put-away triggers broaden again.",
+      "caption": "Day 4 introduces a new cleaning_break state with the wet-wipe pair and a working ↔ cleaning_break loop, and further broadens both put-away triggers.",
       "states": [
         {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
         {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
@@ -163,7 +163,7 @@
     {
       "id": "day5",
       "label": "Day 5",
-      "caption": "No new rules and no new states. The reflector only finishes broadening the remaining triggers, so the robot fires earlier — first-fire delay is down to about one second.",
+      "caption": "Day 5 introduces no new pairs or states; the reflector only finishes broadening the remaining triggers, so the trigger lines grow while the actions and FSM topology stay fixed.",
       "states": [
         {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
         {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
@@ -226,7 +226,7 @@
     {
       "id": "routine-change",
       "label": "Routine Change",
-      "caption": "The user switches to a routine that starts with vitamins. The reflector does not append a rule — it rewrites one: sitting down now means deliver the vitamins instead of the cereal, and taking the vitamins means deliver water.",
+      "caption": "Even when the user sits down with a bowl as before, taking vitamins before eating the cereal that the robot has just delivered causes the transition “person sits down” → “cereal to person” to be revised, after reflection, to “person sits down” → “vitamin to person”.",
       "states": [
         {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
         {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
