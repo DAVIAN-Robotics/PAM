@@ -24,7 +24,6 @@ FIGURES = {
     "fig5_multiday":            (6,  0.06, 0.318),
     "fig6_transfer_A2B":        (7,  0.06, 0.318),
     "fig7_memory_evolution":    (8,  0.06, 0.30),
-    "fig8_vla_quali":           (9,  0.19, 0.405, 0.12, 0.91),
     "fig21_vitamin":            (28, 0.645, 0.755),
 }
 
