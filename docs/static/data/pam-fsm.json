@@ -226,7 +226,7 @@
     {
       "id": "routine-change",
       "label": "Routine Change",
-      "caption": "The user switches to a routine that starts with vitamins. The reflector does not append a rule — it rewrites one: sitting down now means deliver the pill instead of the cereal, and picking up the pill means deliver water. The paper's Fig. 7 shows this change at the task-label granularity (\"Pill to Person\", \"Water to Person\"); the rule sentences below are a reconstruction in the idiom of Fig. 13.",
+      "caption": "The user switches to a routine that starts with vitamins. The reflector does not append a rule — it rewrites one: sitting down now means deliver the vitamins instead of the cereal, and taking the vitamins means deliver water.",
       "states": [
         {"id": "meal_preparation", "desc": "Person is gathering ingredients and preparing food.", "isNew": false},
         {"id": "eating", "desc": "Person is consuming the meal.", "isNew": false},
@@ -247,9 +247,9 @@
              {"text": "Person places a bowl on the desk", "isNew": false},
              {"text": "Person sits down at the desk", "isNew": false}
            ],
-           "action": "Pick up the pill and place it next to the person.", "isNew": false, "isRevised": true,
+           "action": "Pick up the vitamin bottle and place it next to the person.", "isNew": false, "isRevised": true,
            "wasAction": "Pick up the cereal bag and place it next to the person."},
-          {"triggers": [{"text": "Person picks pill", "isNew": true}],
+          {"triggers": [{"text": "Person picks up the vitamins", "isNew": true}],
            "action": "Pick up the water bottle and place it next to the person.", "isNew": true},
           {"triggers": [
              {"text": "Person pours cereal into the bowl", "isNew": false},
