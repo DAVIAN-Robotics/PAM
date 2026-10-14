@@ -2,6 +2,7 @@
 
 Crops are vertical bands of a page: the paper's figures all span the text
 width, so x is fixed to the text margins and only y0/y1 vary per figure.
+Figures that sit in one column (the PAM wrapfigure) override x as well.
 All values are fractions of the page box.
 """
 import pathlib
@@ -14,20 +15,17 @@ DPI = 300
 
 X0, X1 = 0.10, 0.90  # text margins, shared by every figure below
 
-# name -> (1-indexed page, y0 fraction, y1 fraction)
+# name -> (1-indexed page, y0 fraction, y1 fraction[, x0 fraction, x1 fraction])
 FIGURES = {
     "fig1_motivation":          (2,  0.06, 0.28),
     "fig2_overview":            (4,  0.06, 0.255),
+    "fig3_pam":                 (4,  0.535, 0.775, 0.555, 0.835),
     "fig4_tasks":               (5,  0.06, 0.196),
     "fig5_multiday":            (6,  0.06, 0.318),
     "fig6_transfer_A2B":        (7,  0.06, 0.318),
     "fig7_memory_evolution":    (8,  0.06, 0.30),
-    "fig10_cameras":            (17, 0.06, 0.23),
-    "fig11_pertask":            (18, 0.06, 0.30),
-    "fig12_selfevolving":       (22, 0.06, 0.325),
+    "fig8_vla_quali":           (9,  0.19, 0.405, 0.12, 0.91),
     "fig21_vitamin":            (28, 0.645, 0.755),
-    "fig22_vitamin_results":    (30, 0.06, 0.325),
-    "fig23_transfer_B2A":       (30, 0.395, 0.625),
 }
 
 
@@ -36,8 +34,8 @@ def main() -> None:
     doc = fitz.open(PDF)
     zoom = DPI / 72.0
     for name, spec in FIGURES.items():
-        page_no, y0, y1 = spec
-        x0, x1 = X0, X1
+        page_no, y0, y1 = spec[:3]
+        x0, x1 = spec[3:] if len(spec) == 5 else (X0, X1)
         page = doc[page_no - 1]
         r = page.rect
         clip = fitz.Rect(
