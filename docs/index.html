@@ -162,15 +162,13 @@
               pairs, but this provides limited context for interpreting cues within the user's
               routine. For example, an empty bowl on the desk may indicate that the robot should
               bring cereal when the user is about to eat or put the bowl away when they have
-              finished eating. To reduce this ambiguity, we organize PAM using a finite-state-machine (FSM)
-              structure: states describe activity phases, per-state trigger&ndash;action pairs link
-              cues to assistive tasks, and transitions specify the events that connect phases.
-              Transitions capture observable changes in the activity; for instance, picking up a
-              spoon indicates the shift from meal preparation to eating. A trigger should occur
-              before the user begins an action that the robot can perform for them. For example,
-              when the user sits down holding an empty bowl, the robot brings cereal before the
-              user fetches it. The predictor uses PAM as contextual guidance to assess whether
-              assistance is appropriate given the current observations.
+              finished eating. To reduce this ambiguity, we organize PAM using a
+              finite-state-machine (FSM) structure: states describe activity phases, per-state
+              trigger&ndash;action pairs link cues to assistive tasks, and transitions specify the
+              events that connect phases. Transitions capture observable changes in the activity;
+              for instance, picking up a spoon indicates the shift from meal preparation to eating.
+              A trigger should occur before the user begins an action that the robot can perform for
+              them.
             </p>
           </div>
         </div>
