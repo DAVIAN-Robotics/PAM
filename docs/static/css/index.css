@@ -113,6 +113,11 @@ body {
   overflow: hidden;
 }
 
+/* Robot clips are 4:3; keep the whole frame instead of cropping to 16:9. */
+.video-slot--4x3 {
+  aspect-ratio: 4 / 3;
+}
+
 .video-slot video {
   width: 100%;
   height: 100%;
