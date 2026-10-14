@@ -104,34 +104,13 @@
       <div class="figure">
         <img src="static/images/fig1_motivation.png"
              alt="Three ways to respond to a person arriving at a desk with a bowl: explicit command, intention prediction, and memory-based prediction.">
-        <p class="figure-caption">
-          Visually similar observations map to different correct actions depending on user-specific
-          habits, and our PAM memory resolves this ambiguity by conditioning the task predictor on
-          accumulated behavioral context.
-        </p>
       </div>
       <div class="content is-medium" style="margin-top: 1.5rem;">
         <p>
-          A truly useful assistant in everyday life does not only respond to requests, but also
-          anticipates when help would be valuable. Recent work has adopted a System 1&ndash;2 design
-          that explicitly separates a high-level reasoning module from a VLA that executes atomic
-          tasks. We adopt this structure, which in turn places the burden of proactivity squarely
-          on the high-level VLM.
-        </p>
-        <p>
           Zero-shot prediction remains unreliable when the same observable behavior corresponds to
-          different desired outcomes across users: one person setting out a mug wants coffee,
-          another wants hot water for tea. A fixed, pretrained predictor cannot resolve such
-          ambiguity, because the missing information is not in the scene but in the individual
-          user's habits.
-        </p>
-        <p>
-          Crucially, this missing information can be learned during deployment. In housekeeping
-          settings, an individual's behavior is highly repetitive, so even a handful of past
-          interactions reveal stable preferences, and corrective feedback gathered once can be
-          reused whenever a similar situation recurs. To this end, we introduce Procedural
-          Assistance Memory (PAM), a continually updated deployment-time memory that records when
-          assistance is needed and what assistive task should be issued for a particular user.
+          different desired outcomes across users. The missing information is not in the scene but
+          in the individual user's habits. Crucially, this missing information can be learned
+          during deployment.
         </p>
       </div>
     </div>
@@ -141,13 +120,6 @@
   <section class="section" id="method">
     <div class="container is-max-desktop">
       <h2 class="title is-3 section-heading has-text-centered">Method</h2>
-      <div class="content is-medium">
-        <p>
-          Our goal is to learn and store a user's routine in memory, then use it to decide when to
-          assist and what task to perform in real time. The system should also adapt quickly to
-          routine changes without retraining.
-        </p>
-      </div>
       <div class="figure">
         <img src="static/images/fig2_overview.png"
              alt="Overview: a VLM task predictor reads PAM and recent frames to select a task for the VLA executor; at the end of each day a VLM reflector updates PAM from the day's video.">
@@ -161,17 +133,10 @@
       <h3 class="title is-4" style="margin-top: 2.5rem;">Real-Time Task Prediction and Execution via System 1&ndash;2 Architecture</h3>
       <div class="content is-medium">
         <p>
-          Our task predictor serves as System 2, selecting assistive tasks without task-specific
-          user instructions. At each 1-Hz step, it receives the latest <em>W</em> video frames, PAM
-          as text, and the fixed instruction, <em>"Proactively help the user before they ask."</em>
-          It uses the routine stored in PAM to interpret the observations and outputs either a task
-          expressed in natural language or NO_ACT.
-        </p>
-        <p>
-          The predicted task is passed to the VLA executor, which serves as System 1 and generates
-          low-level robot actions. For example, the predictor selects <em>"bring milk"</em> as the
-          user pours cereal. The executor then carries out this task by picking up the milk and
-          placing it next to the user.
+          Our task predictor serves as System 2. At each 1-Hz step, it receives the latest video
+          frames, PAM as text, and the fixed instruction, <em>"Proactively help the user before they
+          ask."</em> The predicted task is passed to the VLA executor, which serves as System 1 and
+          generates low-level robot actions.
         </p>
       </div>
 
@@ -180,18 +145,10 @@
         <div class="column is-7">
           <div class="content is-medium">
             <p>
-              The simple solution is a flat list of trigger&ndash;action pairs, but this provides
-              limited context for interpreting cues within the user's routine. For example, an
-              empty bowl on the desk may indicate that the robot should bring cereal when the user
-              is about to eat or put the bowl away when they have finished eating.
-            </p>
-            <p>
-              To reduce this ambiguity, we organize PAM using a finite-state-machine (FSM)
+              A flat list of trigger&ndash;action pairs provides limited context for interpreting
+              cues within the user's routine. We organize PAM using a finite-state-machine (FSM)
               structure: states describe activity phases, per-state trigger&ndash;action pairs link
               cues to assistive tasks, and transitions specify the events that connect phases.
-              Transitions capture observable changes in the activity; for instance, picking up a
-              spoon indicates the shift from meal preparation to eating. A trigger should occur
-              before the user begins an action that the robot can perform for them.
             </p>
           </div>
         </div>
@@ -199,7 +156,6 @@
           <div class="figure">
             <img src="static/images/fig3_pam.png"
                  alt="An example of PAM: a Meal Preparation state with trigger-action pairs, and transitions to Eating, Cleanup, and Leaving.">
-            <p class="figure-caption has-text-centered">An example of PAM, comprising states, trigger&ndash;action pairs, and transitions.</p>
           </div>
         </div>
       </div>
@@ -207,18 +163,8 @@
       <h3 class="title is-4" style="margin-top: 2.5rem;">Offline Memory Reflection and Update</h3>
       <div class="content is-medium">
         <p>
-          At the end of each day, a memory reflector updates PAM offline with reasoning enabled. It
-          receives sampled frames from the day's video, the previous PAM as text, a summary of the
-          day's action history, and user feedback when available.
-        </p>
-        <p>
-          The recording includes actions that the user performed without robot assistance. The
-          reflector examines these segments to identify missed opportunities and infer recurring
-          patterns. For example, seeing the user bring out an empty bowl and then pour cereal can
-          lead it to infer that the robot should bring cereal when the user brings out an empty
-          bowl. It adds the resulting assistance rule to PAM and revises existing states, rules, or
-          transitions when observations or feedback indicate a change in the routine. PAM remains
-          fixed during each day; adaptation occurs through these daily revisions.
+          At the end of each day, a memory reflector updates PAM offline with reasoning enabled.
+          PAM remains fixed during each day; adaptation occurs through these daily revisions.
         </p>
       </div>
     </div>
@@ -228,16 +174,10 @@
   <section class="section" id="tasks">
     <div class="container is-max-widescreen">
       <h2 class="title is-3 section-heading has-text-centered">Experimental Setup</h2>
-      <div class="content is-medium" style="max-width: 820px; margin: 0 auto 2rem;">
+      <div class="content is-medium has-text-centered" style="max-width: 820px; margin: 0 auto 2rem;">
         <p>
-          We evaluate proactive assistance in a morning desk routine. The user arrives at the desk
-          carrying an empty bowl, sits down, pours cereal and then milk into the bowl, and eats
-          breakfast. After eating, the user sets the empty bowl aside and starts working on a
-          laptop, then wipes their mouth with a wet wipe, leaves the used wipe on the desk, and
-          eventually leaves the desk. To assist the user throughout this routine, the robot must
-          perform six proactive tasks. The tasks include both preparing items for the user's next
-          activity and clearing items after use. Thus, the same objects can require different robot
-          actions as the routine progresses, making the timing of assistance part of the task.
+          We evaluate proactive assistance in a morning desk routine, in which the robot must
+          perform six proactive tasks.
         </p>
       </div>
 
@@ -297,39 +237,6 @@
         </div>
       </div>
       <p class="figure-caption has-text-centered">Clips play at 2&times; speed.</p>
-
-      <div class="content is-medium" style="max-width: 820px; margin: 2.5rem auto 0;">
-        <p>
-          <strong>Evaluation protocol.</strong> We formalize proactive task prediction as a
-          per-frame classification problem. Importantly, the label set comprises not only the six
-          tasks above but also a NO_ACT class indicating that no assistance is needed. We report
-          precision, recall, and F1 score per class along with their macro averages. We also report
-          the first-fire delay, measured from the time at which proactive assistance should be
-          provided until the model first predicts the corresponding task. We conduct a multi-day
-          evaluation over 5 days, in which the PAM persists across days and is updated from
-          feedback from previous days.
-        </p>
-        <p>
-          <strong>Implementation details.</strong> We use Qwen 3.5 as the VLM for both the task
-          predictor and the reflector. The task predictor runs with thinking mode disabled to
-          support timely assistance. At each prediction step, it predicts a task or NO_ACT from a
-          window of <em>W</em>=5 frames sampled at stride 2 from the 1&nbsp;fps stream. For the
-          executor, we collect 10 demonstrations per task and use them to finetune
-          &pi;<sub>0.5</sub>.
-        </p>
-        <p><strong>Baselines.</strong></p>
-        <ul>
-          <li><strong>LIT.</strong> Builds a task graph over detected objects and estimates the
-            current progress along the graph to predict the next task.</li>
-          <li><strong>Event-driven VLM.</strong> Predicts the next task only when a scene change is
-            detected via optical flow, by comparing the pre- and post-change frames.</li>
-          <li><strong>Zero-shot VLM.</strong> A state-of-the-art VLM that predicts the next proactive
-            task directly from the current observation, without any adaptation.</li>
-          <li><strong>Ours w/ List Memory.</strong> A variant of our framework that replaces the
-            FSM-structured memory with a flat list of trigger-action pairs accumulated over
-            deployment, while keeping the rest of the pipeline identical.</li>
-        </ul>
-      </div>
     </div>
   </section>
 
@@ -341,30 +248,16 @@
         <img src="static/images/fig5_multiday.png"
              alt="Per-day precision, recall, F1 (T1-T6 average and NO_ACT) and first-fire delay for all methods across five days.">
         <p class="figure-caption">
-          Multi-day proactive task prediction (Days 1&ndash;5). Memory-free baselines show limited
-          T1&ndash;T6 recall overall, while Ours (FSM Memory) consistently improves across days,
-          achieving the highest F1 and reducing first-fire delay from ~5&nbsp;s on Day 1 to
-          ~1&nbsp;s by Day 5.
+          Memory-free baselines show limited T1&ndash;T6 recall overall, while Ours (FSM Memory)
+          consistently improves across days, achieving the highest F1 and reducing first-fire delay
+          from ~5&nbsp;s on Day 1 to ~1&nbsp;s by Day 5.
         </p>
       </div>
       <div class="content is-medium" style="margin-top: 1.5rem;">
         <p>
-          <strong>Effectiveness of Memory.</strong> Baselines without memory (LIT, Event-Driven,
-          Zero-shot VLM) predict conservatively: lacking prior knowledge of the user's routine, they
-          default to NO_ACT whenever the observation is ambiguous, which inflates NO_ACT recall but
-          suppresses proactiveness on T1&ndash;T6. LIT and Event-Driven rarely fire any proactive
-          task, yielding near-zero recall, and the Zero-shot VLM plateaus from Day 2 onward with no
-          mechanism to internalize recurring patterns.
-        </p>
-        <p>
-          <strong>Ablation of Memory Design.</strong> Ours w/ List Memory saturates early, since the
-          flat list offers no abstraction over recurring states as it grows. In contrast, Ours w/
-          FSM Memory consistently improves across days, achieving the highest precision, recall,
-          and F1 on T1&ndash;T6 while reducing first-fire delay from roughly 5 seconds on Day 1 to
-          about 1 second by Day 5. This shows that the gains come from the FSM structure itself,
-          not simply from adding memory. The trade-off is that FSM Memory's eagerness to act lowers
-          its NO_ACT recall relative to the conservative baselines, although a correspondingly
-          higher NO_ACT precision keeps its NO_ACT F1 on par with the others.
+          Ours w/ List Memory saturates early, since the flat list offers no abstraction over
+          recurring states as it grows. The gains come from the FSM structure itself, not simply
+          from adding memory.
         </p>
       </div>
     </div>
@@ -376,42 +269,26 @@
       <h2 class="title is-3 section-heading has-text-centered">Adaptation to Routine Changes</h2>
       <div class="content is-medium">
         <p>
-          When a user's routine changes, previously learned assistance rules may become
-          inappropriate, making rapid adaptation important. Our method addresses this by updating
-          PAM through reflection without retraining the models. We refer to the cereal routine as
-          Scenario A. Scenario B involves a different routine. For example, the user takes vitamins
-          instead of eating cereal. We evaluate how effectively and quickly PAM adapts over five
-          target days when a user who has followed Scenario A suddenly switches to Scenario B.
+          We evaluate how effectively and quickly PAM adapts when a user who has followed the
+          cereal routine (Scenario A) suddenly switches to a vitamin routine (Scenario B).
         </p>
       </div>
       <div class="figure">
         <img src="static/images/fig21_vitamin.png"
              alt="Scenario B: the person enters, takes vitamins, drinks water, uses the laptop while drinking cola, and leaves.">
-        <p class="figure-caption">
-          A different routine (vitamin scenario). The user takes vitamins with water and drinks Coke
-          while working on the laptop. The six assistance tasks involve delivering needed items and
-          clearing them after use.
-        </p>
       </div>
       <div class="figure" style="margin-top: 2rem;">
         <img src="static/images/fig6_transfer_A2B.png"
              alt="Memory adaptation from Scenario A to Scenario B: A-Evolving, Scratch-Evolving, A-Frozen, and Zero-shot VLM over five days.">
         <p class="figure-caption">
-          Memory adaptation (Scenario A&rarr;B). A-Frozen fixes A's Day-5 memory, while A-Evolving
-          updates it at the end of each day in Scenario B. Scratch-Evolving builds memory from
-          scratch on B; Zero-shot VLM uses no memory.
+          A-Frozen fixes A's Day-5 memory, while A-Evolving updates it at the end of each day in
+          Scenario B. Scratch-Evolving builds memory from scratch on B; Zero-shot VLM uses no memory.
         </p>
       </div>
       <div class="content is-medium" style="margin-top: 1.5rem;">
         <p>
-          On Day 1, A-Evolving has lower task recall and F1 than the Zero-shot VLM, suggesting that
-          memory from the previous routine can initially cause confusion in predicting proactive
-          tasks in the new scenario. After a single reflection at the end of Day 1, however, its
-          recall and F1 reach levels comparable to Scratch-Evolving on Day 2. They remain close over
-          the subsequent days, while A-Frozen stays below the Zero-shot VLM. First-fire delay also
-          decreases with continued reflection. These results show that PAM can quickly adapt an
-          existing memory to a different routine, recovering from the initial mismatch after one
-          memory update.
+          PAM can quickly adapt an existing memory to a different routine, recovering from the
+          initial mismatch after one memory update.
         </p>
       </div>
     </div>
@@ -422,15 +299,14 @@
     <div class="container is-max-widescreen">
       <h2 class="title is-3 section-heading has-text-centered">Qualitative Memory Evolution</h2>
       <p class="content is-medium has-text-centered" id="fsm-intro" style="max-width: 820px; margin: 0 auto 2rem;">
-        Comparing Day 3 and Day 5, the FSM-based PAM becomes increasingly accurate: trigger-action
-        pairs that were missing on Day 3 are recovered on Day 5, with each state capturing its full
-        set of triggers and actions. Our FSM-based PAM also adapts dynamically when the user's
-        routine changes.
+        From Day 3&ndash;5, missing trigger-action pairs are recovered and per-state rules are
+        completed. When the user's routine changes, end-of-day reflection revises the affected
+        transitions and rules accordingly.
         <span id="fsm-intro-interactive">Step through the days:
         <span class="fsm-legend-swatch"></span> is a state added that night,
         <span class="fsm-legend-swatch fsm-legend-swatch--outline"></span> is an existing state
-        whose rules changed, and blue text in the rules on the right marks what was added,
-        broadened, or rewritten.</span>
+        whose rules changed, and blue text in the rules marks what was added, broadened, or
+        rewritten.</span>
       </p>
 
       <div class="fsm" id="fsm" hidden>
@@ -449,12 +325,6 @@
       <div class="figure" id="fsm-fallback">
         <img src="static/images/fig7_memory_evolution.png"
              alt="The FSM memory on Day 3, Day 5, and after the routine change.">
-        <p class="figure-caption">
-          Qualitative analysis of FSM-based Procedural Assistance Memory evolution. From Day
-          3&ndash;5, missing trigger-action pairs are recovered and per-state rules are completed.
-          When the user's routine changes, end-of-day reflection revises the affected transitions
-          and rules accordingly.
-        </p>
       </div>
     </div>
   </section>
@@ -463,21 +333,11 @@
   <section class="section" id="closed-loop">
     <div class="container is-max-widescreen">
       <h2 class="title is-3 section-heading has-text-centered">Comparison with Monolithic VLAs</h2>
-      <div class="content is-medium" style="max-width: 820px; margin: 0 auto 2rem;">
-        <p>
-          We provide two VLA baselines, which we finetune on 10 episodes in which the robot performs
-          all six assistance tasks throughout the user's routine.
-        </p>
-        <ul>
-          <li><strong>&pi;<sub>0.5</sub>.</strong> The state-of-the-art open-source pretrained VLA.
-            We prompt it with <em>"Proactively help the user before they ask."</em> at both training
-            and test time throughout the entire scenario.</li>
-          <li><strong>&pi;<sub>0.5</sub> (Reasoning).</strong> We finetune it with
-            <em>"Proactively help the user before they ask."</em> as the high-level prompt and the
-            corresponding atomic command as the low-level task, leveraging its reasoning
-            capability.</li>
-        </ul>
-      </div>
+      <p class="content is-medium has-text-centered" style="max-width: 820px; margin: 0 auto 2rem;">
+        &pi;<sub>0.5</sub>, with or without reasoning, suffers from lower success rates on the
+        atomic tasks themselves, since the end-to-end model is forced to jointly learn robot
+        actions and VLM-style reasoning.
+      </p>
 
       <div class="compare-grid">
         <div class="compare-cell">
@@ -537,26 +397,6 @@
         </table>
         <p class="figure-caption">Task-wise success rate comparison with monolithic VLA with and without subtask reasoning.</p>
       </div>
-
-      <div class="content is-medium" style="max-width: 820px; margin: 1.5rem auto 0;">
-        <p>
-          &pi;<sub>0.5</sub>, with or without reasoning, suffers from lower success rates on the
-          atomic tasks themselves, since the end-to-end model is forced to jointly learn robot
-          actions and VLM-style reasoning. For example, Milk&rarr;Storage is among the harder
-          atomic skills, as it requires grasping the rounded milk cap; &pi;<sub>0.5</sub> trained
-          with a single prompt across all tasks lacks the capacity to specialize on such individual
-          skills.
-        </p>
-        <p>
-          This degradation is especially pronounced in the reasoning variant under our low-data
-          regime. For instance, when the correct prediction is Cereal&rarr;Storage but the user
-          happens to be holding the milk, the visible milk often misleads the model into reasoning
-          Milk&rarr;Storage, and such reasoning errors in turn make the generated action even more
-          likely to fail. In contrast, our framework delegates atomic action generation to the
-          strong pretrained &pi;<sub>0.5</sub> backbone and offloads reasoning to Qwen 3.5,
-          achieving higher accuracy on both axes.
-        </p>
-      </div>
     </div>
   </section>
 
@@ -566,20 +406,9 @@
       <h2 class="title is-3 section-heading has-text-centered">Conclusion</h2>
       <div class="content is-medium">
         <p>
-          We introduced Procedural Assistance Memory (PAM), an FSM-based memory that personalizes
-          proactive robot assistance through daily reflection without weight updates. Across five
-          evaluation days, PAM improves proactive prediction and response timing, while its
-          structured memory adapts to changes in the user's routine. Ablations demonstrate the
-          benefits of FSM structure and continued reflection, and the System 1&ndash;2 decomposition
-          improves task execution over monolithic VLAs.
-        </p>
-        <p>
-          <strong>Limitation.</strong> FSM Memory occasionally fires when the user briefly handles a
-          learned trigger object without committing to that step, which lowers its NO_ACT recall; in
-          such genuinely ambiguous situations the right behavior is often to ask the user rather
-          than to act, but soliciting clarification lies outside our current framework. Due to the
-          limited capacity of current open-source VLAs, our evaluation is restricted to seen
-          scenarios rather than novel objects, layouts, or users.
+          Across five evaluation days, PAM improves proactive prediction and response timing, while
+          its structured memory adapts to changes in the user's routine. The System 1&ndash;2
+          decomposition improves task execution over monolithic VLAs.
         </p>
       </div>
     </div>
