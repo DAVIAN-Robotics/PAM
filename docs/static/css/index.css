@@ -123,9 +123,6 @@ body {
 .video-slot.video-slot--pillar video {
   object-fit: contain;
   background: #fff;
-  /* white margin above and below too, so the clip sits a little smaller */
-  box-sizing: border-box;
-  padding: 4% 0;
 }
 
 .video-slot video {
