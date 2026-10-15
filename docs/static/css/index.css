@@ -115,13 +115,10 @@ body {
   aspect-ratio: 4 / 3;
 }
 
-/* Same 16:9 box as the project video; a 4:3 clip shows whole, pillarboxed. */
-.video-slot--contain {
-  background: #000;
-}
-
-.video-slot.video-slot--contain video {
-  object-fit: contain;
+/* A 4:3 clip at 3/4 width: same height as the 16:9 project video, no black bars. */
+.video-slot--narrow {
+  max-width: 75%;
+  margin: 0 auto;
 }
 
 .video-slot video {
