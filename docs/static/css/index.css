@@ -117,7 +117,7 @@ body {
 
 /* Full Demo: the 4:3 clip with no side margins, kept small on the page. */
 .video-slot--demo {
-  max-width: 45%;
+  max-width: 50%;
   margin: 0 auto;
 }
 
