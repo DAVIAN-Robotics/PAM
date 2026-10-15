@@ -115,10 +115,9 @@ body {
   aspect-ratio: 4 / 3;
 }
 
-/* Full Demo: the 4:3 clip with no side margins, at the height it had in the
-   75%-wide 16:9 box (0.75 x 9/16 x 4/3 = 56.25% of the column). */
+/* Full Demo: the 4:3 clip with no side margins, kept small on the page. */
 .video-slot--demo {
-  max-width: 56.25%;
+  max-width: 45%;
   margin: 0 auto;
 }
 
