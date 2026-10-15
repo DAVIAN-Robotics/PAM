@@ -115,17 +115,11 @@ body {
   aspect-ratio: 4 / 3;
 }
 
-/* Same 16:9 box as the project video; a 4:3 clip sits inside it whole, on white. */
-.video-slot--pillar {
-  background: #fff;
-  /* the whole box takes less of the page than the project video */
-  max-width: 75%;
+/* Full Demo: the 4:3 clip with no side margins, at the height it had in the
+   75%-wide 16:9 box (0.75 x 9/16 x 4/3 = 56.25% of the column). */
+.video-slot--demo {
+  max-width: 56.25%;
   margin: 0 auto;
-}
-
-.video-slot.video-slot--pillar video {
-  object-fit: contain;
-  background: #fff;
 }
 
 .video-slot video {
