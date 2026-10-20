@@ -115,9 +115,10 @@ body {
   aspect-ratio: 4 / 3;
 }
 
-/* Full Demo: the 4:3 clip with no side margins, kept small on the page. */
+/* Full Demo: 16:9 file with the 4:3 robot clip centred over a blurred copy
+   of itself. 66.7% wide keeps the robot clip the size it had at 50% as 4:3. */
 .video-slot--demo {
-  max-width: 50%;
+  max-width: 66.7%;
   margin: 0 auto;
 }
 
