@@ -24,19 +24,21 @@ function setupBibtexCopy() {
   });
 }
 
-// Give every section heading a "#" permalink. Subheadings have no id of their
-// own, so slugify their text to make one.
+// Give every section heading a "#" permalink. A section's first heading links to
+// the section; a later heading keeps its own id, or gets one slugified from its text.
 function setupHeadingAnchors() {
   const slug = (text) => text.toLowerCase().trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '-');
 
   document.querySelectorAll('section[id]').forEach((section) => {
-    section.querySelectorAll('h2, h3').forEach((heading, i) => {
-      const id = i === 0 && heading.tagName === 'H2'
-        ? section.id
-        : `${section.id}-${slug(heading.textContent)}`;
-      if (heading !== section.querySelector('h2')) heading.id = id;
+    const lead = section.querySelector('h2, h3');
+    section.querySelectorAll('h2, h3').forEach((heading) => {
+      let id = section.id;
+      if (heading !== lead) {
+        if (!heading.id) heading.id = `${section.id}-${slug(heading.textContent)}`;
+        id = heading.id;
+      }
 
       const anchor = document.createElement('a');
       anchor.className = 'heading-anchor';
