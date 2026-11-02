@@ -753,6 +753,9 @@ h3:hover > .heading-anchor,
   }
   .toc a:hover { color: var(--ink); }
   .toc a.on { color: var(--pam-blue-ink); border-left-color: var(--pam-blue); font-weight: 600; }
+  /* Subsections sit indented under their section; the section stays dark while one of them is in view. */
+  .toc a.sub { padding-left: 26px; font-size: 0.84rem; }
+  .toc a.in { color: var(--ink); font-weight: 600; }
 }
 
 /* No dangling words: balance short centered lines (titles, captions, task

@@ -9,10 +9,14 @@
   var toc = document.createElement("nav");
   toc.className = "toc";
   toc.setAttribute("aria-label", "Contents");
+  // A link with class "sub" belongs to the nearest plain link above it (e.g. Adaptation under Results).
+  var parent = null;
   var items = links.map(function (a) {
     var c = a.cloneNode(true);
     toc.appendChild(c);
-    return { a: c, sec: document.querySelector(a.getAttribute("href")) };
+    var sub = c.classList.contains("sub");
+    if (!sub) parent = c;
+    return { a: c, sec: document.querySelector(a.getAttribute("href")), parent: sub ? parent : null };
   }).filter(function (it) { return it.sec; });
   document.body.appendChild(toc);
 
@@ -23,7 +27,10 @@
     items.forEach(function (it) { if (top(it.sec) + HEAD <= y) cur = it; });
     // At the very bottom the last sections can never reach the marker line; mark the last one.
     if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) cur = items[items.length - 1];
-    items.forEach(function (it) { it.a.classList.toggle("on", it === cur); });
+    items.forEach(function (it) {
+      it.a.classList.toggle("on", it === cur);
+      it.a.classList.toggle("in", !!cur && cur.parent === it.a);
+    });
   }
   window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(mark); } }, { passive: true });
   window.addEventListener("resize", mark);
