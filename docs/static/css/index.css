@@ -25,19 +25,62 @@
      today's rewrite, so it must start from this plain colour regardless of
      what the current action happens to be styled. */
   --pam-action-plain: #4a4a4a;
+
+  /* Type and layout after DiscoDemo (davian-robotics.github.io/DiscoDemo): Hanken Grotesk for headings
+     and interface, Source Serif 4 for reading text, one column with a contents rail on its left. */
+  --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --ink: #1f2937;
+  --muted: #5b6472;
+  --rule: #dadde3;
+  --soft: #f3f4f6;
+  --surface: #ffffff;
+  --shadow: rgba(31, 41, 55, 0.12);
+  --pam-blue-ink: #1558b0;
+  --btn-bg: #1f2937;
+  --col: 960px;
+  --gutter: clamp(16px, 4vw, 40px);
 }
+
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
 body {
-  font-family: 'Noto Sans', sans-serif;
+  background: #fff;
+  color: var(--ink);
+  font: 400 1.125rem/1.65 var(--serif);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
 }
+
+a { color: var(--pam-blue-ink); text-underline-offset: 0.18em; }
+a:hover { color: var(--ink); }
+
+/* Bulma sets its own families and sizes on these; bring them onto the two page faces. */
+.title, .subtitle, .button, .table, .tag, .fsm, .fsm__graph svg text,
+.task-card__label, .task-card__caption, .compare-cell__label, .figure-caption, .footer {
+  font-family: var(--sans);
+}
+.content, .content.is-medium { font-size: 1.125rem; line-height: 1.65; color: var(--ink); }
+.content p:not(:last-child) { margin-bottom: 1em; }
+.content em { font-style: italic; }
 
 .publication-title {
-  font-family: 'Google Sans', sans-serif;
+  font-family: var(--sans);
 }
 
-.section-heading {
-  font-family: 'Google Sans', sans-serif;
-  margin-bottom: 1.5rem;
+/* Section headings: left-aligned, as in DiscoDemo; sections are separated by a hairline above the heading. */
+.title.section-heading {
+  font: 700 clamp(1.5rem, 3vw, 2rem)/1.15 var(--sans);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 16px;
+  position: relative;
+}
+.title.is-4 {
+  font: 600 1.2rem/1.3 var(--sans);
+  color: var(--ink);
+  position: relative;
 }
 
 .figure {
@@ -51,54 +94,86 @@ body {
 }
 
 .figure-caption {
-  color: var(--pam-gray);
-  font-size: 0.95rem;
+  color: var(--muted);
+  font: 400 0.92rem/1.5 var(--sans);
   margin-top: 0.75rem;
   text-align: left;
 }
 
-/* --- hero --- */
-.pam-authors span {
-  margin-right: 0.35rem;
+/* --- hero (left-aligned, as in DiscoDemo) --- */
+.hero .hero-body { padding: clamp(40px, 8vw, 88px) var(--gutter) 32px; }
+
+.title.publication-title {
+  font: 700 clamp(2rem, 4.6vw, 3.1rem)/1.08 var(--sans);
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-bottom: 0;
 }
+
+.subtitle.pam-authors {
+  font: 500 1rem/1.5 var(--sans);
+  color: var(--ink);
+  margin: 28px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+
+/* Bulma pulls a subtitle up under a title; the byline keeps its own gap. */
+.hero .title + .subtitle.pam-authors { margin-top: 28px; }
+
+/* The second author row starts at Sungwon Hwang. */
+.pam-break { flex-basis: 100%; height: 0; }
 
 /* Author links stay in the subtitle's own color -- Bulma's default link blue
    would turn the byline into a row of buttons. The hairline underline is what
    says "clickable". */
 .pam-authors a {
-  border-bottom: 1px solid var(--pam-border);
   color: inherit;
+  text-decoration: none;
 }
 
 .pam-authors a:hover {
-  border-bottom-color: var(--pam-blue);
-  color: var(--pam-blue);
+  color: var(--pam-blue-ink);
+  text-decoration: underline;
 }
 
-.pam-affiliation {
-  font-size: 1.15rem;
-  margin-top: 0.5rem;
-}
-
+.pam-affiliation,
 .pam-equal {
-  color: var(--pam-gray);
-  font-size: 0.9rem;
-  margin-top: 0.25rem;
+  font: 400 0.9rem/1.4 var(--sans);
+  color: var(--muted);
+  margin-top: 6px;
 }
+
+.pam-equal { margin-top: 2px; }
 
 .pam-venue {
-  color: var(--pam-blue);
-  font-size: 1.15rem;
-  margin-top: 0.5rem;
+  color: var(--pam-blue-ink);
+  font: 600 1.05rem/1.4 var(--sans);
+  margin-top: 14px;
 }
 
 .pam-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
-  margin-top: 1.75rem;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-top: 24px;
 }
+
+/* Dark pill buttons, as in DiscoDemo. */
+.pam-links .button {
+  font: 600 0.95rem/1 var(--sans);
+  height: auto;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: #fff;
+}
+
+.pam-links .button:hover { background: var(--pam-blue-ink); color: #fff; }
+.pam-links .button .icon { width: 1em; height: 1em; margin-right: 0.45em !important; margin-left: 0 !important; }
 
 /* --- video slot --- */
 .video-slot {
@@ -151,12 +226,20 @@ body {
   display: flex;
 }
 
-#abstract,
-#tasks,
-#results,
-#generalization {
-  background: var(--pam-bg-alt);
+/* --- sections: one column, white page, a hairline between sections --- */
+.section { padding: 0 var(--gutter); }
+.section > .container,
+.hero .container {
+  max-width: var(--col) !important;
+  width: 100%;
 }
+.section > .container {
+  margin-top: 56px;
+  padding-top: 56px;
+  border-top: 1px solid var(--rule);
+}
+#teaser > .container { margin-top: 8px; padding-top: 0; border-top: 0; }
+.section .content { max-width: 52rem; }
 
 .task-grid {
   display: grid;
@@ -215,7 +298,7 @@ body {
   border-radius: 999px;
   color: var(--pam-gray);
   cursor: pointer;
-  font-family: 'Google Sans', sans-serif;
+  font-family: var(--sans);
   font-size: 0.95rem;
   padding: 0.5rem 1.1rem;
 }
@@ -389,7 +472,7 @@ body {
 .fsm-node:hover .fsm-node__box { stroke: var(--pam-blue); }
 
 .fsm-node-title {
-  font-family: 'Google Sans', sans-serif;
+  font-family: var(--sans);
   font-size: 15px;
   fill: #202124;
 }
@@ -447,7 +530,7 @@ body {
 .fsm-edge-label.is-new { fill: var(--pam-blue); }
 
 .fsm-rules__head h3 {
-  font-family: 'Google Sans', sans-serif;
+  font-family: var(--sans);
   font-size: 1.25rem;
 }
 
@@ -563,24 +646,113 @@ body {
   padding: 1.25rem;
 }
 
-/* --- heading permalinks --- */
+/* --- heading permalinks: a "#" that shows in the left margin while the heading is hovered --- */
 .heading-anchor {
-  color: var(--pam-border);
+  position: absolute;
+  right: 100%;
+  padding-right: 0.3em;
+  color: var(--rule);
   font-weight: 400;
-  margin-right: 0.4em;
   text-decoration: none;
-  transition: color 0.15s ease;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
 }
+
+h2:hover > .heading-anchor,
+h3:hover > .heading-anchor,
+.heading-anchor:focus { opacity: 1; }
 
 .heading-anchor:hover,
 .heading-anchor:focus {
-  color: var(--pam-gray);
+  color: var(--muted);
 }
 
-/* A section landed on via its permalink shouldn't sit flush against the
-   viewport edge. */
-section[id] {
-  scroll-margin-top: 1.5rem;
+/* --- bibtex and footer --- */
+.bibtex pre {
+  font: 400 0.85rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.footer {
+  background: none;
+  padding: 64px var(--gutter) 48px;
+  color: var(--muted);
+}
+
+.footer .container {
+  max-width: var(--col) !important;
+  border-top: 1px solid var(--rule);
+  padding-top: 24px;
+  text-align: left !important;
+}
+
+/* --- header (after DiscoDemo) --- */
+.site-head {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, #fff 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--sans);
+}
+.head-row {
+  display: flex; align-items: center; gap: 24px; height: 52px;
+  max-width: calc(var(--col) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter);
+}
+.wordmark-sm { font-size: 1.5rem; font-weight: 700; color: var(--pam-blue); text-decoration: none; letter-spacing: -0.01em; }
+.wordmark-sm:hover { color: var(--pam-blue-ink); }
+.site-head nav { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; }
+.site-head nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; white-space: nowrap; }
+.site-head nav a:hover { color: var(--ink); }
+.lab-nav { margin-left: auto; display: flex; align-items: center; gap: 14px; flex: none; }
+.home-link { display: inline-flex; }
+.home-link img { height: 22px; width: auto; display: block; }
+.more { position: relative; }
+.more summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 0.9rem; white-space: nowrap; }
+.more summary::-webkit-details-marker { display: none; }
+.more summary::after { content: ""; display: inline-block; margin-left: 6px; border: 4px solid transparent; border-top-color: currentColor; transform: translateY(2px); }
+.more[open] summary, .more summary:hover { color: var(--ink); }
+.more-menu {
+  position: absolute; right: 0; top: calc(100% + 12px); width: min(380px, 86vw); max-height: 70vh; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 6px;
+  box-shadow: 0 8px 24px var(--shadow); z-index: 20;
+}
+.more-menu a { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; padding: 8px 10px; border-radius: 7px; text-decoration: none; color: var(--ink); }
+.more-menu a:hover { background: var(--soft); }
+.more-head { margin: 8px 10px 4px; font: 600 0.72rem/1 var(--sans); color: var(--pam-blue-ink); }
+.more-menu b { font-weight: 600; font-size: 0.9rem; }
+.more-menu span { grid-column: 1; font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+.more-menu small { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+
+/* Narrow screens: two header rows -- name and lab links on top, section links below (scrolls sideways). */
+@media (max-width: 1379px) {
+  html { scroll-padding-top: 96px; }
+  .head-row { flex-wrap: wrap; height: auto; padding-top: 8px; row-gap: 2px; }
+  .site-head nav { order: 3; width: 100%; padding: 4px 0 10px; }
+}
+@media (max-width: 420px) {
+  .head-row { column-gap: 10px; }
+  .wordmark-sm { font-size: 1.25rem; }
+  .lab-nav { gap: 6px; }
+  .home-link img { height: 18px; }
+  .more summary { font-size: 0.82rem; }
+}
+
+/* Left-hand contents on wide screens (built by toc.js from the header links); the current section is marked. */
+.toc { display: none; }
+@media (min-width: 1380px) {
+  .site-head nav { display: none; }
+  .toc {
+    display: flex; flex-direction: column; gap: 2px;
+    position: fixed; top: 50%; transform: translateY(-50%); z-index: 5;
+    left: max(16px, calc((100vw - var(--col)) / 2 - 200px)); width: 170px;
+    font-family: var(--sans);
+  }
+  .toc a {
+    color: var(--muted); text-decoration: none; font-size: 0.9rem; line-height: 1.2;
+    padding: 6px 0 6px 12px; border-left: 2px solid var(--rule);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .toc a:hover { color: var(--ink); }
+  .toc a.on { color: var(--pam-blue-ink); border-left-color: var(--pam-blue); font-weight: 600; }
 }
 
 /* No dangling words: balance short centered lines (titles, captions, task
